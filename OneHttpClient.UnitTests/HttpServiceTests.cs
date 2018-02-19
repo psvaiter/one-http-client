@@ -1,69 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using MockHttpServer;
-using OneHttpClient.Models;
+﻿using OneHttpClient.Models;
+using OneHttpClient.UnitTests.Fixtures;
 using Xunit;
 using static Xunit.Assert;
 
 namespace OneHttpClient.UnitTests
 {
-    public class OperationResponse
-    {
-        public bool Success { get; set; }
-        public string ServerMessage { get; set; }
-    }
-
-    public class HttpServerFixture : IDisposable
-    {
-        public MockServer MockServer { get; private set; }
-        public string BaseAddress { get; private set; }
-
-        public readonly static string SampleText = "You made it!";
-        public readonly static string SampleTextJson = "{\"success\":true,\"serverMessage\":\"You made it!\"}";
-        public readonly static string SampleTextJsonSnakeCase = "{\"success\":true,\"server_message\":\"You made it!\"}";
-        public readonly static OperationResponse SampleObject = new OperationResponse() { Success = true, ServerMessage = SampleText };
-
-        public HttpServerFixture()
-        {
-            // Setup endpoint in mock server
-            var requestHandlers = new List<MockHttpHandler>()
-            {
-                new MockHttpHandler("/empty", (req, resp, param) => resp.StatusCode(200).ContentType("text/plain").Content("")),
-                new MockHttpHandler("/text", (req, resp, param) => resp.StatusCode(200).ContentType("text/plain").Content(SampleText)),
-                new MockHttpHandler("/json", (req, resp, param) => resp.StatusCode(200).ContentType("application/json").Content(SampleTextJson)),
-                new MockHttpHandler("/echo", (req, resp, param) => resp.StatusCode(200).ContentType("application/json").Content(req.Content())),
-                new MockHttpHandler("/invalid-json", (req, resp, param) => resp.StatusCode(200).ContentType("application/json").Content(SampleText)),
-                new MockHttpHandler("/internal-server-error", (req, resp, param) => resp.StatusCode(500).Content("")),
-            };
-
-            // Create a mock http server on one un-used port.
-            MockServer = new MockServer(0, requestHandlers);
-
-            // Set base address based on chosen port.
-            BaseAddress = $"http://localhost:{MockServer.Port}";
-        }
-
-        public void Dispose()
-        {
-            MockServer.Dispose();
-        }
-    }
-
-    public class HttpClientFixture : IDisposable
-    {
-        public HttpService HttpService { get; private set; }
-
-        public HttpClientFixture()
-        {
-            HttpService = new HttpService();
-        }
-
-        public void Dispose()
-        {
-
-        }
-    }
-
     public class HttpServiceTests : IClassFixture<HttpServerFixture>, IClassFixture<HttpClientFixture>
     {
         private HttpServerFixture _serverFixture;
@@ -78,7 +19,7 @@ namespace OneHttpClient.UnitTests
             _httpService = _clientFixture.HttpService;
         }
 
-        [Fact]
+        [Fact(DisplayName = "GET string should work.")]
         [Trait("Category", "GET")]
         public void SendJson_to_GET_string_should_return_200()
         {
@@ -96,7 +37,7 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
-        [Fact]
+        [Fact(DisplayName = "GET JSON should work.")]
         [Trait("Category", "GET")]
         public void SendJson_to_GET_json_should_return_200()
         {
@@ -114,7 +55,7 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
-        [Fact]
+        [Fact(DisplayName = "GET should receive status code 500 without body when that was returned by server.")]
         [Trait("Category", "GET")]
         public void SendJson_to_GET_internal_error_should_return_500()
         {
@@ -131,7 +72,7 @@ namespace OneHttpClient.UnitTests
             //Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
-        [Fact]
+        [Fact(DisplayName = "GET JSON should have deserialized response when requested.")]
         [Trait("Category", "GET")]
         public void SendJson_to_GET_json_deserialized_should_return_200()
         {
@@ -139,7 +80,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "application/json";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
-            var response = _httpService.SendJson<OperationResponse>($"{_serverFixture.BaseAddress}/json", HttpMethodEnum.GET);
+            var response = _httpService.SendJson<OperationResponseFixture>($"{_serverFixture.BaseAddress}/json", HttpMethodEnum.GET);
 
             //Assert
             NotNull(response);
@@ -153,7 +94,7 @@ namespace OneHttpClient.UnitTests
             Equal(HttpServerFixture.SampleObject.ServerMessage, response.ResponseData.ServerMessage);
         }
 
-        [Fact]
+        [Fact(DisplayName = "GET should return the response without data deserialized when JSON is invalid.")]
         [Trait("Category", "GET")]
         public void SendJson_to_GET_invalid_json_deserialized_should_return_200_without_data_deserialized()
         {
@@ -164,7 +105,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "application/json"; // Serialization will be attemped due to content type being json but will fail
             var expectedResponseBody = HttpServerFixture.SampleText;
 
-            var response = _httpService.SendJson<OperationResponse>($"{_serverFixture.BaseAddress}/invalid-json", HttpMethodEnum.GET);
+            var response = _httpService.SendJson<OperationResponseFixture>($"{_serverFixture.BaseAddress}/invalid-json", HttpMethodEnum.GET);
 
             //Assert
             NotNull(response);
@@ -176,7 +117,7 @@ namespace OneHttpClient.UnitTests
             Null(response.ResponseData);
         }
 
-        [Fact]
+        [Fact(DisplayName = "GET should return the response without data deserialized when Content-Type is not supported for deserialization by HttpService.")]
         [Trait("Category", "GET")]
         public void SendJson_to_GET_data_deserialized_with_unsupported_content_type_deserialization_should_return_200_without_data_deserialized()
         {
@@ -187,7 +128,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "text/plain"; // Deserialization will not even be attemped due to content type being plain text.
             var expectedResponseBody = HttpServerFixture.SampleText;
 
-            var response = _httpService.SendJson<OperationResponse>($"{_serverFixture.BaseAddress}/text", HttpMethodEnum.GET);
+            var response = _httpService.SendJson<OperationResponseFixture>($"{_serverFixture.BaseAddress}/text", HttpMethodEnum.GET);
 
             //Assert
             NotNull(response);
@@ -199,7 +140,7 @@ namespace OneHttpClient.UnitTests
             Null(response.ResponseData);
         }
 
-        [Fact]
+        [Fact(DisplayName = "POST should work. Return the same data sent with status code 200 when /echo is requested.")]
         [Trait("Category", "POST")]
         public void SendJson_to_POST_data_should_return_200_with_data_sent()
         {
@@ -217,7 +158,7 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
-        [Fact]
+        [Fact(DisplayName = "PUT should work. Return the same data sent with status code 200 when /echo is requested.")]
         [Trait("Category", "PUT")]
         public void SendJson_to_PUT_data_should_return_200_with_data_sent()
         {
@@ -235,7 +176,7 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
-        [Fact]
+        [Fact(DisplayName = "PACTH should work. Return the same data sent with status code 200 when /echo is requested.")]
         [Trait("Category", "PATCH")]
         public void SendJson_to_PATCH_data_should_return_200_with_data_sent()
         {
@@ -253,7 +194,7 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
-        [Fact]
+        [Fact(DisplayName = "DELETE should work.")]
         [Trait("Category", "DELETE")]
         public void SendJson_to_DELETE_data_should_return_200()
         {
@@ -269,7 +210,7 @@ namespace OneHttpClient.UnitTests
             Equal(expectedResponseBody, response.ResponseBody);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Serialization/Deserialization in snake_case should work when this naming strategy is chosen.")]
         [Trait("Category", "POST")]
         public void SendJson_in_snake_case_should_be_serialized_and_deserialized_correctly()
         {
@@ -277,7 +218,7 @@ namespace OneHttpClient.UnitTests
             var expectedResponseBody = HttpServerFixture.SampleTextJsonSnakeCase;
             var expectedResponseBodyObject = HttpServerFixture.SampleObject;
 
-            var response = _httpService.SendJson<OperationResponse>($"{_serverFixture.BaseAddress}/echo", HttpMethodEnum.POST, HttpServerFixture.SampleObject, namingStrategy: NamingStrategyEnum.SnakeCase);
+            var response = _httpService.SendJson<OperationResponseFixture>($"{_serverFixture.BaseAddress}/echo", HttpMethodEnum.POST, HttpServerFixture.SampleObject, namingStrategy: NamingStrategyEnum.SnakeCase);
 
             //Assert
             NotNull(response);
