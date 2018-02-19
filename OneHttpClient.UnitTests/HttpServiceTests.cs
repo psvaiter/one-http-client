@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using MockHttpServer;
-using OneHttpClient;
 using OneHttpClient.Models;
 using Xunit;
 using static Xunit.Assert;

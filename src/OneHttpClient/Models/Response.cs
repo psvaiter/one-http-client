@@ -32,26 +32,33 @@ namespace OneHttpClient.Models
         /// HTTP status and headers are read automatically and assigned to appropriate properties, 
         /// but content is not read from message and must be passed in <paramref name="responseBody"/>.
         /// </summary>
-        /// <param name="fullResponseMessage">The original <see cref="HttpResponseMessage"/>.</param>
+        /// <param name="fullResponse">The original <see cref="HttpResponseMessage"/>.</param>
         /// <param name="responseBody">The content of the response as a string.</param>
         /// <param name="elapsedTime">The time the request took to complete.</param>
-        public Response(HttpResponseMessage fullResponseMessage, string responseBody, TimeSpan elapsedTime)
+        public Response(HttpResponseMessage fullResponse, string responseBody, TimeSpan elapsedTime)
         {
-            StatusCode = fullResponseMessage.StatusCode;
-            IsSuccessStatusCode = fullResponseMessage.IsSuccessStatusCode;
+            if (fullResponse == null)
+            {
+                throw new ArgumentNullException(nameof(fullResponse));
+            }
+
+            StatusCode = fullResponse.StatusCode;
+            IsSuccessStatusCode = fullResponse.IsSuccessStatusCode;
             ResponseBody = responseBody;
             ElapsedTime = elapsedTime;
 
             Headers = new NameValueCollection();
-            foreach (var header in fullResponseMessage.Headers)
+            foreach (var header in fullResponse.Headers)
             {
                 Headers.Add(header.Key, string.Join(",", header.Value));
             }
 
-            foreach (var header in fullResponseMessage.Content.Headers)
+            foreach (var header in fullResponse.Content.Headers)
             {
                 Headers.Add(header.Key, string.Join(",", header.Value));
             }
+
+            FullResponse = fullResponse;
         }
 
         /// <summary>
@@ -80,7 +87,8 @@ namespace OneHttpClient.Models
         public TimeSpan ElapsedTime { get; }
 
         /// <summary>
-        /// Provided for flexibility and advanced use cases.
+        /// Provided for flexibility and advanced use cases, it's the original <see cref="HttpResponseMessage"/> 
+        /// returned by <see cref="HttpClient"/> request.
         /// </summary>
         public HttpResponseMessage FullResponse { get; }
     }
