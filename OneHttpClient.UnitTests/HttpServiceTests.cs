@@ -72,7 +72,7 @@ namespace OneHttpClient.UnitTests
             //Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
-        [Fact(DisplayName = "GET JSON should have deserialized response when requested.")]
+        [Fact(DisplayName = "GET JSON should have deserialized response successfully when requested.")]
         [Trait("Category", "GET")]
         public void SendJson_to_GET_json_deserialized_should_return_200()
         {
