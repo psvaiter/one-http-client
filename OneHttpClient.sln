@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9CBF1266-A5A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{790D6048-9B3E-4190-B646-B926448DA271}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneHttpClient.UnitTests", "OneHttpClient.UnitTests\OneHttpClient.UnitTests.csproj", "{933778E2-B7DC-460E-96A5-B5768A5C48E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneHttpClient.UnitTests", "test\OneHttpClient.UnitTests\OneHttpClient.UnitTests.csproj", "{933778E2-B7DC-460E-96A5-B5768A5C48E0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DFCA5DF7-AB50-4670-9076-45511CC105E4} = {DFCA5DF7-AB50-4670-9076-45511CC105E4}
 	EndProjectSection

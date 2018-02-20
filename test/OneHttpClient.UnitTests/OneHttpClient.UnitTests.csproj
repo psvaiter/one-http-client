@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\OneHttpClient\OneHttpClient.csproj" />
+    <ProjectReference Include="..\..\src\OneHttpClient\OneHttpClient.csproj" />
   </ItemGroup>
 
 </Project>
