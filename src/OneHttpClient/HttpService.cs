@@ -67,9 +67,9 @@ namespace OneHttpClient
         /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        public Response<TResponse> SendJson<TResponse>(string url, HttpMethodEnum method, object data = null, NameValueCollection headers = null, int timeoutInSeconds = 0, NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase)
+        public async Task<Response<TResponse>> SendJson<TResponse>(string url, HttpMethodEnum method, object data = null, NameValueCollection headers = null, int timeoutInSeconds = 0, NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase)
         {
-            var response = SendJson(url, method, data, headers, timeoutInSeconds, namingStrategy);
+            var response = await SendJson(url, method, data, headers, timeoutInSeconds, namingStrategy);
             var deserializedResponseBody = TryDeserializeResponseBody<TResponse>(response.Headers, response.ResponseBody, namingStrategy);
 
             return new Response<TResponse>(response, deserializedResponseBody);
@@ -89,14 +89,14 @@ namespace OneHttpClient
         /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        public Response SendJson(string url, HttpMethodEnum method, object data = null, NameValueCollection headers = null, int timeoutInSeconds = 0, NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase)
+        public async Task<Response> SendJson(string url, HttpMethodEnum method, object data = null, NameValueCollection headers = null, int timeoutInSeconds = 0, NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase)
         {
             SetActiveConnectionTimeout(url);
             // This will allow a DNS lookup periodically since HttpClient is static.
 
             using (var requestMessage = BuildRequestMessage(url, method, data, headers, namingStrategy))
             {
-                return SendRequest(requestMessage, timeoutInSeconds).Result;
+                return await SendRequest(requestMessage, timeoutInSeconds);
             }
         }
 
