@@ -1,7 +1,7 @@
 ﻿namespace OneHttpClient.Models
 {
     /// <summary>
-    /// Enumerator that contains verbs to process http request message.
+    /// Enumerator that contains the available verbs to process HTTP request message.
     /// </summary>
     public enum HttpMethodEnum
     {

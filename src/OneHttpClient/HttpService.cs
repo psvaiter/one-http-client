@@ -24,31 +24,32 @@ namespace OneHttpClient
 
         /// <summary>
         /// The amount of time in seconds to keep open an active connection.
-        /// Set to -1 (Timeout.Infinite) to keep the connection open forever as long as the connection is active.
+        /// Set to -1 (<see cref="Timeout.Infinite">) to keep the connection open forever as long as the connection is 
+        /// active.
         /// </summary>
         private static int _connectionLeaseTimeout;
 
         /// <summary>
         /// Class constructor.
         /// </summary>
-        /// <remarks>
-        /// Connection lease timeout can be set to <see cref="Timeout.Infinite"/>. It's important to note
-        /// that doing this can lead to problems detecting DNS changes. This problem is likely to occur 
-        /// when a connection tends to be open all the time due to activity or to being reused before idle 
-        /// timeout is reached. That's because <see cref="HttpClient"/> will not perform a DNS lookup 
-        /// while the connection is already established.
-        /// </remarks>
         /// <param name="defaultRequestTimeout">
         /// Default timeout in seconds to use on all HTTP requests made by this service.
         /// </param>
         /// <param name="connectionLeaseTimeout">
-        /// Number of seconds after which an active connection should be closed. Requests in progress when 
-        /// timeout is reached are not affected.
+        /// Number of seconds after which an active connection should be closed. Requests in progress when timeout is 
+        /// reached are not affected. The default is 10 minutes.
         /// </param>
+        /// <remarks>
+        /// Connection lease timeout can be set to <see cref="Timeout.Infinite"/>. It's important to note that doing 
+        /// this can lead to problems detecting DNS changes. This problem is likely to occur when a connection tends 
+        /// to be open all the time due to activity (like being reused before idle timeout is reached. That's because 
+        /// <see cref="HttpClient"/> will not perform a DNS lookup while the connection is already established.
+        /// </remarks>
         public HttpService(int defaultRequestTimeout = 100, int connectionLeaseTimeout = 10 * 60)
         {
             _httpClient.Timeout = TimeSpan.FromSeconds(defaultRequestTimeout);
             _connectionLeaseTimeout = connectionLeaseTimeout;
+            ServicePointManager.DefaultConnectionLimit = 10;
         }
 
         /// <summary>
