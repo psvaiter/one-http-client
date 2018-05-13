@@ -1,14 +1,11 @@
-﻿using System;
+﻿using OneHttpClient.Models;
+using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using OneHttpClient.Models;
 
 namespace OneHttpClient
 {
@@ -68,15 +65,15 @@ namespace OneHttpClient
         /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        public async Task<Response<TResponse>> Send<TResponse>(string url, HttpMethodEnum method, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public async Task<Response<TResponse>> Send<TResponse>(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
             if (options == null)
             {
                 options = new HttpRequestOptions();
             }
 
-            var response = await Send(url, method, data, headers, options);
-            var deserializedResponseBody = TryDeserializeResponseBody<TResponse>(response.Headers, response.ResponseBody, options.NamingStrategy);
+            var response = await Send(method, url, data, headers, options);
+            var deserializedResponseBody = Utils.TryDeserializeResponseBody<TResponse>(response.Headers, response.ResponseBody, options.NamingStrategy);
 
             return new Response<TResponse>(response, deserializedResponseBody);
         }
@@ -95,7 +92,7 @@ namespace OneHttpClient
         /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        public async Task<Response> Send(string url, HttpMethodEnum method, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public async Task<Response> Send(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
             SetActiveConnectionTimeout(url);
             // This will allow a DNS lookup periodically since HttpClient is static.
@@ -105,7 +102,7 @@ namespace OneHttpClient
                 options = new HttpRequestOptions();
             }
 
-            using (var requestMessage = BuildRequestMessage(url, method, data, headers, options.NamingStrategy))
+            using (var requestMessage = BuildRequestMessage(method, url, data, headers, options))
             {
                 return await SendRequest(requestMessage, options.TimeoutInSeconds);
             }
@@ -129,68 +126,23 @@ namespace OneHttpClient
         /// <summary>
         /// Builds the request message serializing data as JSON.
         /// </summary>
-        /// <param name="url">URL to send request message.</param>
         /// <param name="method">HTTP method to use when making the request.</param>
+        /// <param name="url">URL to send request message.</param>
         /// <param name="data">Object containing data to be sent.</param>
         /// <param name="headers">Headers of request message.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns>The <see cref="HttpRequestMessage"/> object.</returns>
-        private HttpRequestMessage BuildRequestMessage(string url, HttpMethodEnum method, object data, NameValueCollection headers, NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase)
+        private HttpRequestMessage BuildRequestMessage(HttpMethodEnum method, string url, object data, NameValueCollection headers, HttpRequestOptions options)
         {
-            const string contentType = "application/json";
-            // TODO: Null check on data?
-            var serializerSettings = GetJsonSerializerSettings(namingStrategy);
-            string serializedData = JsonConvert.SerializeObject(data, serializerSettings);
-
             var requestMessage = new HttpRequestMessage(new HttpMethod(method.ToString()), url)
             {
-                Content = new StringContent(serializedData, Encoding.UTF8, contentType)
+                Content = Utils.CreateHttpContent(data, options)
             };
 
             SetRequestHeaders(requestMessage, headers);
             return requestMessage;
         }
-
-        /// <summary>
-        /// Gets the JSON serializer settings and sets the naming strategy supplied.
-        /// </summary>
-        /// <param name="strategy">The naming strategy to be used during serialization.</param>
-        /// <returns>The serializer settings of Newtonsoft.Json.</returns>
-        private JsonSerializerSettings GetJsonSerializerSettings(NamingStrategyEnum strategy)
-        {
-            return new JsonSerializerSettings()
-            {
-                ContractResolver = new DefaultContractResolver()
-                {
-                    NamingStrategy = GetNamingStrategy(strategy)
-                }
-            };
-        }
-
-        /// <summary>
-        /// Gets the naming strategy of Newtonsoft.Json from our <see cref="NamingStrategyEnum"/>.
-        /// </summary>
-        /// <param name="strategy">Enumeration value of naming strategy.</param>
-        /// <returns>The naming strategy to be used by Newtonsoft serializer.</returns>
-        private NamingStrategy GetNamingStrategy(NamingStrategyEnum strategy)
-        {
-            if (strategy == NamingStrategyEnum.CamelCase)
-            {
-                return new CamelCaseNamingStrategy(processDictionaryKeys: true, overrideSpecifiedNames: true);
-            }
-
-            if (strategy == NamingStrategyEnum.SnakeCase)
-            {
-                return new SnakeCaseNamingStrategy(processDictionaryKeys: true, overrideSpecifiedNames: true);
-            }
-
-            return new DefaultNamingStrategy()
-            {
-                ProcessDictionaryKeys = true,
-                OverrideSpecifiedNames = true
-            };
-        }
-
+        
         /// <summary>
         /// Sets request headers in <see cref="HttpRequestMessage"/>.
         /// </summary>
@@ -242,102 +194,64 @@ namespace OneHttpClient
             return new CancellationTokenSource(delayInSeconds * 1000).Token;
         }
 
-        /// <summary>
-        /// Tries to deserializes a response body based on response content type.
-        /// </summary>
-        /// <remarks>
-        /// Currently supports only JSON. If content type is not supported or if deserialization 
-        /// fails the default value of type is returned.
-        /// </remarks>
-        /// <typeparam name="TResponse">Type to deserialize the response body.</typeparam>
-        /// <param name="headers">Headers with information </param>
-        /// <param name="responseBody">The string of response body to be deserialized.</param>
-        /// <param name="namingStrategy">The stategy to use when serializing property names.
-        /// Default is <see cref="NamingStrategyEnum.CamelCase"/>.
-        /// </param>
-        /// <returns>The deserialized object or default value of type.</returns>
-        private TResponse TryDeserializeResponseBody<TResponse>(NameValueCollection headers, string responseBody, NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase)
-        {
-            if (headers != null && string.IsNullOrEmpty(responseBody) == false)
-            {
-                string contentType = headers.Get("Content-Type");
-
-                if (contentType?.Contains("application/json") == true)
-                {
-                    return TryDeserializeJson<TResponse>(responseBody, GetJsonSerializerSettings(namingStrategy));
-                }
-            }
-
-            return default(TResponse);
-        }
-
-        /// <summary>
-        /// Deserializes a string in JSON format.
-        /// </summary>
-        /// <typeparam name="T">Type to deserialize JSON.</typeparam>
-        /// <param name="json">String formatted as valid JSON.</param>
-        /// <param name="serializerSettings">Settings to be used on deserialization. If this is null, the default serialization settings will be used.</param>
-        /// <returns>The deserialized object when successful. The default value of type otherwise.</returns>
-        private T TryDeserializeJson<T>(string json, JsonSerializerSettings serializerSettings = null)
-        {
-            try
-            {
-                return JsonConvert.DeserializeObject<T>(json, serializerSettings);
-            }
-            catch
-            {
-                return default(T);
-            }
-        }
-
+        // GET
         public Task<Response> Get(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(url, HttpMethodEnum.GET, null, headers, options);
+            return Send(HttpMethodEnum.GET, url, null, headers, options);
         }
 
+        // GET (typed response)
         public Task<Response<TResponse>> Get<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(url, HttpMethodEnum.GET, null, headers, options);
+            return Send<TResponse>(HttpMethodEnum.GET, url, null, headers, options);
         }
 
+        // POST
         public Task<Response> Post(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(url, HttpMethodEnum.POST, data, headers, options);
+            return Send(HttpMethodEnum.POST, url, data, headers, options);
         }
 
+        // POST (typed response)
         public Task<Response<TResponse>> Post<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(url, HttpMethodEnum.POST, data, headers, options);
+            return Send<TResponse>(HttpMethodEnum.POST, url, data, headers, options);
         }
 
+        // PUT
         public Task<Response> Put(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(url, HttpMethodEnum.PUT, data, headers, options);
+            return Send(HttpMethodEnum.PUT, url, data, headers, options);
         }
 
+        // PUT (typed response)
         public Task<Response<TResponse>> Put<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(url, HttpMethodEnum.PUT, data, headers, options);
+            return Send<TResponse>(HttpMethodEnum.PUT, url, data, headers, options);
         }
 
+        // PATCH
         public Task<Response> Patch(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(url, HttpMethodEnum.PATCH, data, headers, options);
+            return Send(HttpMethodEnum.PATCH, url, data, headers, options);
         }
 
+        // PATCH (typed response)
         public Task<Response<TResponse>> Patch<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(url, HttpMethodEnum.PATCH, data, headers, options);
+            return Send<TResponse>(HttpMethodEnum.PATCH, url, data, headers, options);
         }
 
+        // DELETE
         public Task<Response> Delete(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(url, HttpMethodEnum.DELETE, null, headers, options);
+            return Send(HttpMethodEnum.DELETE, url, null, headers, options);
         }
 
+        // DELETE (typed response)
         public Task<Response<TResponse>> Delete<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(url, HttpMethodEnum.DELETE, null, headers, options);
+            return Send<TResponse>(HttpMethodEnum.DELETE, url, null, headers, options);
         }
     }
 }

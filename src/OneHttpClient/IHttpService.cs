@@ -19,7 +19,7 @@ namespace OneHttpClient
         /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns><see cref="Response"/> with data from HTTP response.</returns>
-        Task<Response> Send(string url, HttpMethodEnum method, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response> Send(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP request message as JSON, gets the reponse and tries to deserialize it to a given type.
@@ -31,7 +31,7 @@ namespace OneHttpClient
         /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        Task<Response<TResponse>> Send<TResponse>(string url, HttpMethodEnum method, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response<TResponse>> Send<TResponse>(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP GET request message.
