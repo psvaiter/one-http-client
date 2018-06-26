@@ -23,6 +23,11 @@ namespace OneHttpClient
         /// <returns></returns>
         public static HttpContent CreateHttpContent(object data, HttpRequestOptions options)
         {
+            if (data == null)
+            {
+                return null;
+            }
+
             if (options.MediaType == MediaTypeEnum.PlainText)
             {
                 return new StringContent(data as string, Encoding.UTF8, "text/plain");
@@ -36,7 +41,7 @@ namespace OneHttpClient
                 return new StringContent(serializedData, Encoding.UTF8, "application/json");
             }
 
-            return new ByteArrayContent(CovnertObjectToByteArray(data));
+            return new ByteArrayContent(CovnertToByteArray(data));
         }
 
         /// <summary>
@@ -44,7 +49,7 @@ namespace OneHttpClient
         /// </summary>
         /// <param name="obj">The object to be converted.</param>
         /// <returns>The byte array.</returns>
-        public static byte[] CovnertObjectToByteArray(object obj)
+        public static byte[] CovnertToByteArray(object obj)
         {
             var bf = new BinaryFormatter();
             using (var ms = new MemoryStream())
