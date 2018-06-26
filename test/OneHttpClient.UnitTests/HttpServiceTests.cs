@@ -158,6 +158,24 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
+        [Fact(DisplayName = "POST without content should work. Return empty body with status code 200 when /echo is requested.")]
+        [Trait("Category", "POST")]
+        public void Send_POST_wihtout_data_should_return_200_with_data_sent()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = "application/json";
+            var expectedResponseBody = string.Empty;
+
+            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null).Result;
+
+            //Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equal(expectedStatusCode, (int) response.StatusCode);
+            Equal(expectedResponseBody, response.ResponseBody);
+            Equal(expectedContentType, response.Headers.Get("Content-Type"));
+        }
+
         [Fact(DisplayName = "PUT should work. Return the same data sent with status code 200 when /echo is requested.")]
         [Trait("Category", "PUT")]
         public void Send_PUT_data_should_return_200_with_data_sent()
