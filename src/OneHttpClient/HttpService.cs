@@ -96,12 +96,7 @@ namespace OneHttpClient
         {
             SetActiveConnectionTimeout(url);
             // This will allow a DNS lookup periodically since HttpClient is static.
-
-            if (options == null)
-            {
-                options = new HttpRequestOptions();
-            }
-
+            
             using (var requestMessage = BuildRequestMessage(method, url, data, headers, options))
             {
                 return await SendRequest(requestMessage, options.TimeoutInSeconds);
@@ -136,7 +131,7 @@ namespace OneHttpClient
         {
             var requestMessage = new HttpRequestMessage(new HttpMethod(method.ToString()), url)
             {
-                Content = Utils.CreateHttpContent(data, options)
+                Content = Utils.CreateHttpContent(data, options ?? new HttpRequestOptions())
             };
 
             SetRequestHeaders(requestMessage, headers);
