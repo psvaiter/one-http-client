@@ -35,7 +35,7 @@ namespace OneHttpClient
 
             if (options.MediaType == MediaTypeEnum.JSON)
             {
-                var serializerSettings = GetJsonSerializerSettings(options.NamingStrategy);
+                var serializerSettings = GetJsonSerializerSettings(options.NamingStrategy, options.NullValueHandling);
                 string serializedData = JsonConvert.SerializeObject(data, serializerSettings);
 
                 return new StringContent(serializedData, Encoding.UTF8, "application/json");
@@ -73,7 +73,13 @@ namespace OneHttpClient
         /// Default is <see cref="NamingStrategyEnum.CamelCase"/>.
         /// </param>
         /// <returns>The deserialized object or default value of type.</returns>
-        public static TResponse TryDeserializeResponseBody<TResponse>(NameValueCollection headers, string responseBody, NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase)
+        public static TResponse TryDeserializeResponseBody<TResponse>
+            (
+                NameValueCollection headers,
+                string responseBody,
+                NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase,
+                NullValueHandling nullValueHandling = NullValueHandling.Include
+            )
         {
             if (headers != null && string.IsNullOrEmpty(responseBody) == false)
             {
@@ -81,7 +87,7 @@ namespace OneHttpClient
 
                 if (contentType?.Contains("application/json") == true)
                 {
-                    return TryDeserializeJson<TResponse>(responseBody, GetJsonSerializerSettings(namingStrategy));
+                    return TryDeserializeJson<TResponse>(responseBody, GetJsonSerializerSettings(namingStrategy, nullValueHandling));
                 }
             }
 
@@ -112,10 +118,13 @@ namespace OneHttpClient
         /// </summary>
         /// <param name="strategy">The naming strategy to be used during serialization.</param>
         /// <returns>The serializer settings of Newtonsoft.Json.</returns>
-        private static JsonSerializerSettings GetJsonSerializerSettings(NamingStrategyEnum strategy)
+        private static JsonSerializerSettings GetJsonSerializerSettings(NamingStrategyEnum strategy, NullValueHandling nullValueHandling)
         {
             return new JsonSerializerSettings()
             {
+                NullValueHandling = nullValueHandling,
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                // TODO: test DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
                 ContractResolver = new DefaultContractResolver()
                 {
                     NamingStrategy = GetNamingStrategy(strategy)

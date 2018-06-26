@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using OneHttpClient.Models;
 
 public class HttpRequestOptions
@@ -18,4 +19,10 @@ public class HttpRequestOptions
     /// Only applicable to JSON media type. Default: CamelCase.
     /// </summary>
     public NamingStrategyEnum NamingStrategy { get; set; } = NamingStrategyEnum.CamelCase;
+
+    /// <summary>
+    /// Tells whether null values should be (de)serialized or not.
+    /// Only applicable to JSON media type.
+    /// </summary>
+    public NullValueHandling NullValueHandling { get; set; }
 }
