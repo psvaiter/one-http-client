@@ -285,7 +285,7 @@ namespace OneHttpClient.UnitTests
             True(options.TimeoutInSeconds < HttpServerFixture.SampleDelayInSeconds);
             NotNull(exception);
             IsType<AggregateException>(exception);
-            IsType<TaskCanceledException>((exception as AggregateException).InnerException);
+            IsType<TimeoutException>((exception as AggregateException).InnerException);
         }
     }
 }

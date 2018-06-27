@@ -176,13 +176,19 @@ namespace OneHttpClient
             using (var cts = GetCancellationTokenSource(TimeSpan.FromSeconds(requestTimeout)))
             {
                 var stopwatch = Stopwatch.StartNew();
+                try
+                {
+                    var response = await _httpClient.SendAsync(requestMessage, cts?.Token ?? CancellationToken.None);
+                    string responseBody = await response.Content.ReadAsStringAsync();
 
-                var response = await _httpClient.SendAsync(requestMessage, cts?.Token ?? CancellationToken.None);
-                string responseBody = await response.Content.ReadAsStringAsync();
-
-                stopwatch.Stop();
-
-                return new Response(response, responseBody, stopwatch.Elapsed);
+                    stopwatch.Stop();
+                    return new Response(response, responseBody, stopwatch.Elapsed);
+                }
+                catch (TaskCanceledException)
+                {
+                    stopwatch.Stop();
+                    throw new TimeoutException($"The operation has timed out after {stopwatch.ElapsedMilliseconds} ms.");
+                }
             }
         }
 
