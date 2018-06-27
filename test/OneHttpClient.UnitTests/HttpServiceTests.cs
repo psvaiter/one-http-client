@@ -1,4 +1,6 @@
-﻿using OneHttpClient.Models;
+﻿using System;
+using System.Threading.Tasks;
+using OneHttpClient.Models;
 using OneHttpClient.UnitTests.Fixtures;
 using Xunit;
 using static Xunit.Assert;
@@ -158,15 +160,34 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
-        [Fact(DisplayName = "POST without content should work. Return empty body with status code 200 when /echo is requested.")]
+        [Fact(DisplayName = "POST without content should work (media type: JSON). Return status code 200 without content when /echo is requested.")]
         [Trait("Category", "POST")]
-        public void Send_POST_wihtout_data_should_return_200_with_data_sent()
+        public void Send_POST_wihtout_json_data_should_return_200_without_content()
         {
             var expectedStatusCode = 200;
             var expectedContentType = "application/json";
             var expectedResponseBody = string.Empty;
 
             var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null).Result;
+
+            //Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equal(expectedStatusCode, (int) response.StatusCode);
+            Equal(expectedResponseBody, response.ResponseBody);
+            Equal(expectedContentType, response.Headers.Get("Content-Type"));
+        }
+
+        [Fact(DisplayName = "POST without content should work (media type: plain text). Return status code 200 without content when /echo is requested.")]
+        [Trait("Category", "POST")]
+        public void Send_POST_wihtout_string_data_should_return_200_without_content()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = "application/json";
+            var expectedResponseBody = string.Empty;
+            var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.PlainText };
+
+            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null, options: options).Result;
 
             //Assert
             NotNull(response);
@@ -247,6 +268,24 @@ namespace OneHttpClient.UnitTests
             NotNull(response.ResponseData);
             True(response.ResponseData.Success);
             Equal(HttpServerFixture.SampleText, response.ResponseData.ServerMessage);
+        }
+
+        [Fact( DisplayName = "HttpService should throw on timeout.")]
+        [Trait("Category", "GET")]
+        public void Send_should_throw_on_timeout()
+        {
+            var options = new HttpRequestOptions() { TimeoutInSeconds = 1 };
+
+            var exception = Record.Exception(() =>
+            {
+                return _httpService.Send(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/timeout", options: options).Result;
+            });
+
+            //Assert
+            True(options.TimeoutInSeconds < HttpServerFixture.SampleDelayInSeconds);
+            NotNull(exception);
+            IsType<AggregateException>(exception);
+            IsType<TaskCanceledException>((exception as AggregateException).InnerException);
         }
     }
 }
