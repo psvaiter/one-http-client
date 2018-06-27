@@ -163,35 +163,42 @@ namespace OneHttpClient
         /// Does the work of making the HTTP request and reading the response from server.
         /// </summary>
         /// <param name="requestMessage">The request message to send.</param>
-        /// <param name="requestTimeout">Amount of time in seconds to wait before cancelling request.
-        /// When 0 the default timeout will be used.
+        /// <param name="requestTimeout">Amount of time in seconds to wait before cancelling the request.
         /// </param>
         /// <returns>The response from server with the time it took to complete.</returns>
+        /// <remarks>
+        /// The <paramref name="requestTimeout"/> will only be effective if it's value is less than default timeout
+        /// configured during initialization of <see cref="_httpClient"/>. Otherwise the default timeout will take 
+        /// place. When <paramref name="requestTimeout"/> is zero the per-request basis timeout is not even configured.
+        /// </remarks>
         private async Task<Response> SendRequest(HttpRequestMessage requestMessage, int requestTimeout = 0)
         {
-            var stopwatch = Stopwatch.StartNew();
+            using (var cts = GetCancellationTokenSource(TimeSpan.FromSeconds(requestTimeout)))
+            {
+                var stopwatch = Stopwatch.StartNew();
 
-            var response = await _httpClient.SendAsync(requestMessage, CreateCancellationToken(requestTimeout));
-            string responseBody = await response.Content.ReadAsStringAsync();
+                var response = await _httpClient.SendAsync(requestMessage, cts?.Token ?? CancellationToken.None);
+                string responseBody = await response.Content.ReadAsStringAsync();
 
-            stopwatch.Stop();
+                stopwatch.Stop();
 
-            return new Response(response, responseBody, stopwatch.Elapsed);
+                return new Response(response, responseBody, stopwatch.Elapsed);
+            }
         }
 
         /// <summary>
-        /// Creates a cancellation token that can be used to cancel a task after a given amount of time.
+        /// Gets a <see cref="CancellationTokenSource"/> to cancel a task after a given amount of time.
         /// </summary>
-        /// <param name="delayInSeconds">Amount of time in seconds. Default is 0, which results in CancellationToken.None.</param>
-        /// <returns>The cancellation token.</returns>
-        private CancellationToken CreateCancellationToken(int delayInSeconds = 0)
+        /// <param name="delay">Amount of time to wait before cancelling a task.</param>
+        /// <returns>The <see cref="CancellationTokenSource"/> when delay is greater than zero or null otherwise.</returns>
+        private CancellationTokenSource GetCancellationTokenSource(TimeSpan delay)
         {
-            if (delayInSeconds == 0)
+            if (delay <= TimeSpan.Zero)
             {
-                return CancellationToken.None;
+                return null;
             }
 
-            return new CancellationTokenSource(delayInSeconds * 1000).Token;
+            return new CancellationTokenSource(delay);
         }
 
         // GET
