@@ -29,12 +29,16 @@ namespace OneHttpClient.Models
 
         /// <summary>
         /// Constructs a response from an <see cref="HttpResponseMessage"/>.
-        /// HTTP status and headers are read automatically and assigned to appropriate properties, 
-        /// but content is not read from message and must be passed in <paramref name="responseBody"/>.
         /// </summary>
         /// <param name="fullResponse">The original <see cref="HttpResponseMessage"/>.</param>
         /// <param name="responseBody">The content of the response as a string.</param>
         /// <param name="elapsedTime">The time the request took to complete.</param>
+        /// <remarks>
+        /// HTTP status and headers are automatically read from <paramref name="fullResponse"/> 
+        /// and assigned to the properties <see cref="StatusCode"/> and <see cref="Headers"/> 
+        /// respectively, but <see cref="HttpRequestMessage.Content"/> is not read from message 
+        /// and must be passed in <paramref name="responseBody"/>.
+        /// </remarks>
         public Response(HttpResponseMessage fullResponse, string responseBody, TimeSpan elapsedTime)
         {
             if (fullResponse == null)
@@ -96,32 +100,34 @@ namespace OneHttpClient.Models
     /// <summary>
     /// Represents the response of a web request.
     /// </summary>
-    /// <typeparam name="T">Type of object that should hold the returned data.</typeparam>
-    public sealed class Response<T> : Response
+    /// <typeparam name="TData">Type of object that should hold the returned data.</typeparam>
+    public sealed class Response<TData> : Response
     {
         /// <summary>
         /// Constructs a response from an <see cref="HttpResponseMessage"/>.
-        /// HTTP status and headers are read automatically and assigned to appropriate properties, 
-        /// but content is not read from message and must be passed in <paramref name="responseBody"/>.
         /// </summary>
-        /// <param name="fullResponseMessage">The original <see cref="HttpResponseMessage"/>.</param>
+        /// <param name="fullResponse">The original <see cref="HttpResponseMessage"/>.</param>
         /// <param name="responseBody">The content of the response as a string.</param>
         /// <param name="responseData">The deserialized content of response.</param>
         /// <param name="elapsedTime">The time the request took to complete.</param>
-        public Response(HttpResponseMessage fullResponseMessage, string responseBody, T responseData, TimeSpan elapsedTime)
-            : base(fullResponseMessage, responseBody, elapsedTime)
+        /// <remarks>
+        /// HTTP status and headers are automatically read from <paramref name="fullResponse"/> 
+        /// and assigned to the properties <see cref="StatusCode"/> and <see cref="Headers"/> 
+        /// respectively, but <see cref="HttpRequestMessage.Content"/> is not read from message 
+        /// and must be passed in <paramref name="responseBody"/>.
+        /// </remarks>
+        public Response(HttpResponseMessage fullResponse, string responseBody, TData responseData, TimeSpan elapsedTime)
+            : base(fullResponse, responseBody, elapsedTime)
         {
             ResponseData = responseData;
         }
 
         /// <summary>
         /// Constructs a response from another response.
-        /// HTTP status and headers are read automatically and assigned to appropriate properties, 
-        /// but content is not read from message and must be passed in <paramref name="responseBody"/>.
         /// </summary>
         /// <param name="other">The other response from which data should be copied.</param>
         /// <param name="responseData">The deserialized content of response.</param>
-        public Response(Response other, T responseData)
+        public Response(Response other, TData responseData)
             : base(other.FullResponse, other.ResponseBody, other.ElapsedTime)
         {
             ResponseData = responseData;
@@ -130,6 +136,6 @@ namespace OneHttpClient.Models
         /// <summary>
         /// The returned data deserialized to type T.
         /// </summary>
-        public T ResponseData { get; }
+        public TData ResponseData { get; }
     }
 }
