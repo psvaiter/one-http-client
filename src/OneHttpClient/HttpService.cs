@@ -51,7 +51,7 @@ namespace OneHttpClient
         }
 
         /// <summary>
-        /// Sends an HTTP request message as JSON, gets the reponse and tries to deserialize it to a given type.
+        /// Sends an HTTP request message, gets the reponse and tries to deserialize it to a given type.
         /// </summary>
         /// <remarks>
         /// When both request-specific timeout and default timeout are set, the shorter one will apply.
@@ -79,7 +79,7 @@ namespace OneHttpClient
         }
 
         /// <summary>
-        /// Sends an HTTP request message as JSON and gets the reponse (as string).
+        /// Sends an HTTP request message and gets the reponse (as string).
         /// </summary>
         /// <remarks>
         /// When both request-specific timeout and default timeout are set, the shorter one will apply.
@@ -124,7 +124,7 @@ namespace OneHttpClient
         }
 
         /// <summary>
-        /// Builds the request message serializing data as JSON.
+        /// Builds the request message serializing data.
         /// </summary>
         /// <param name="method">HTTP method to use when making the request.</param>
         /// <param name="url">URL to send request message.</param>

@@ -10,7 +10,7 @@ namespace OneHttpClient
     public interface IHttpService
     {
         /// <summary>
-        /// Sends HTTP request message as JSON and gets the reponse.
+        /// Sends HTTP request message and gets the reponse.
         /// </summary>
         /// <param name="url">URL to send request message.</param>
         /// <param name="method">HTTP method to use when making the request.</param>
@@ -22,7 +22,7 @@ namespace OneHttpClient
         Task<Response> Send(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
-        /// Sends HTTP request message as JSON, gets the reponse and tries to deserialize it to a given type.
+        /// Sends HTTP request message, gets the reponse and tries to deserialize it to a given type.
         /// </summary>
         /// <param name="url">URL to send request message.</param>
         /// <param name="method">HTTP method to use when making the request.</param>
@@ -52,7 +52,7 @@ namespace OneHttpClient
         Task<Response<TResponse>> Get<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
-        /// Sends HTTP POST request message as JSON.
+        /// Sends HTTP POST request message.
         /// </summary>
         /// <param name="url">URL to send request message.</param>
         /// <param name="data">Object containing data to be sent.</param>
@@ -62,7 +62,7 @@ namespace OneHttpClient
         Task<Response> Post(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
-        /// Sends HTTP POST request message as JSON.
+        /// Sends HTTP POST request message.
         /// </summary>
         /// <param name="url">URL to send request message.</param>
         /// <param name="data">Object containing data to be sent.</param>
@@ -72,7 +72,7 @@ namespace OneHttpClient
         Task<Response<TResponse>> Post<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
-        /// Sends HTTP PUT request message as JSON.
+        /// Sends HTTP PUT request message.
         /// </summary>
         /// <param name="url">URL to send request message.</param>
         /// <param name="data">Object containing data to be sent.</param>
@@ -82,7 +82,7 @@ namespace OneHttpClient
         Task<Response> Put(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
-        /// Sends HTTP PUT request message as JSON.
+        /// Sends HTTP PUT request message.
         /// </summary>
         /// <param name="url">URL to send request message.</param>
         /// <param name="data">Object containing data to be sent.</param>
@@ -92,7 +92,7 @@ namespace OneHttpClient
         Task<Response<TResponse>> Put<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
-        /// Sends HTTP PATCH request message as JSON.
+        /// Sends HTTP PATCH request message.
         /// </summary>
         /// <param name="url">URL to send request message.</param>
         /// <param name="data">Object containing data to be sent.</param>
@@ -102,7 +102,7 @@ namespace OneHttpClient
         Task<Response> Patch(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
-        /// Sends HTTP PATCH request message as JSON.
+        /// Sends HTTP PATCH request message.
         /// </summary>
         /// <param name="url">URL to send request message.</param>
         /// <param name="data">Object containing data to be sent.</param>
