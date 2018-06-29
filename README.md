@@ -74,7 +74,7 @@ public class Authenticator
         {
             headers.Add("Request-Id", Guid.NewGuid());
             
-            response = _http.Post<AuthenticateResponse>(url, request, headers);            
+            response = await _http.Post<AuthenticateResponse>(url, request, headers);            
             if (response?.IsSuccessStatusCode == true)
             {
                 // Process response
