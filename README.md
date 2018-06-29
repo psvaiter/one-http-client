@@ -68,13 +68,12 @@ public class Authenticator
     public async Task<bool> AuthenticateAsync(AuthenticateRequest request)
     {
         var headers = new NameValueCollection();
-        var response = null;
         
         try
         {
             headers.Add("Request-Id", Guid.NewGuid());
             
-            response = await _http.Post<AuthenticateResponse>(url, request, headers);            
+            var response = await _http.Post<AuthenticateResponse>(url, request, headers);            
             if (response?.IsSuccessStatusCode == true)
             {
                 // Process response
