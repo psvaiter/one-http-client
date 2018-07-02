@@ -101,20 +101,15 @@ namespace OneHttpClient.Models
     public sealed class Response<TData> : Response
     {
         /// <summary>
-        /// Constructs a response from an <see cref="HttpResponseMessage"/>.
+        /// Creates a response with informed parameters.
         /// </summary>
-        /// <param name="fullResponse">The original <see cref="HttpResponseMessage"/>.</param>
+        /// <param name="statusCode">HTTP status code.</param>
+        /// <param name="headers">Request headers as key-value collection.</param>
         /// <param name="responseBody">The content of the response as a string.</param>
-        /// <param name="responseData">The deserialized content of response.</param>
+        /// <param name="responseData">The content of the response as object of type <typeparamref name="TData"/>.</param>
         /// <param name="elapsedTime">The time the request took to complete.</param>
-        /// <remarks>
-        /// HTTP status and headers are automatically read from <paramref name="fullResponse"/> 
-        /// and assigned to the properties StatusCode and Headers respectively, but 
-        /// <see cref="HttpRequestMessage.Content"/> is not read from message and must be passed 
-        /// in <paramref name="responseBody"/>.
-        /// </remarks>
-        public Response(HttpResponseMessage fullResponse, string responseBody, TData responseData, TimeSpan elapsedTime)
-            : base(fullResponse, responseBody, elapsedTime)
+        public Response(HttpStatusCode statusCode, NameValueCollection headers, string responseBody, TData responseData, TimeSpan elapsedTime)
+            : base(statusCode, headers, responseBody, elapsedTime)
         {
             ResponseData = responseData;
         }
@@ -125,13 +120,13 @@ namespace OneHttpClient.Models
         /// <param name="other">The other response from which data should be copied.</param>
         /// <param name="responseData">The deserialized content of response.</param>
         public Response(Response other, TData responseData)
-            : base(other.FullResponse, other.ResponseBody, other.ElapsedTime)
+            : base(other.StatusCode, other.Headers, other.ResponseBody, other.ElapsedTime)
         {
             ResponseData = responseData;
         }
 
         /// <summary>
-        /// The returned data deserialized to type T.
+        /// The returned data deserialized to type <typeparamref name="TData"/>.
         /// </summary>
         public TData ResponseData { get; }
     }
