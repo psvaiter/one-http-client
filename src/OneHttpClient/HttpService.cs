@@ -62,8 +62,7 @@ namespace OneHttpClient
         /// <param name="method">HTTP method to use when making the request.</param>
         /// <param name="data">Object containing data to be sent or null when a body is not required.</param>
         /// <param name="headers">Headers of request message.</param>
-        /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
-        /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
+        /// <param name="options">Advanced request options. See <see cref="HttpRequestOptions"/> for more details.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
         public async Task<Response<TResponse>> Send<TResponse>(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
@@ -73,7 +72,7 @@ namespace OneHttpClient
             }
 
             var response = await Send(method, url, data, headers, options);
-            var deserializedResponseBody = Utils.TryDeserializeResponseBody<TResponse>(response.Headers, response.ResponseBody, options.NamingStrategy);
+            var deserializedResponseBody = Utils.TryDeserializeResponseBody<TResponse>(response.Headers, response.ResponseBody, options.NamingStrategy, options.NullValueHandling);
 
             return new Response<TResponse>(response, deserializedResponseBody);
         }
@@ -89,8 +88,7 @@ namespace OneHttpClient
         /// <param name="method">HTTP method to use when making the request.</param>
         /// <param name="data">Object containing data to be sent or null when a body is not required.</param>
         /// <param name="headers">Headers of request message.</param>
-        /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
-        /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
+        /// <param name="options">Advanced request options. See <see cref="HttpRequestOptions"/> for more details.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
         public async Task<Response> Send(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
