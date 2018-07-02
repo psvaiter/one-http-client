@@ -14,14 +14,12 @@ namespace OneHttpClient.Models
         /// Creates a response with informed parameters.
         /// </summary>
         /// <param name="statusCode">HTTP status code.</param>
-        /// <param name="isSuccessStatusCode">True if status code indicates a successful response (2xx).</param>
         /// <param name="headers">Request headers as key-value collection.</param>
         /// <param name="responseBody">The content of the response as a string.</param>
         /// <param name="elapsedTime">The time the request took to complete.</param>
-        public Response(HttpStatusCode statusCode, bool isSuccessStatusCode, NameValueCollection headers, string responseBody, TimeSpan elapsedTime)
+        public Response(HttpStatusCode statusCode, NameValueCollection headers, string responseBody, TimeSpan elapsedTime)
         {
             StatusCode = statusCode;
-            IsSuccessStatusCode = isSuccessStatusCode;
             Headers = headers ?? new NameValueCollection();
             ResponseBody = responseBody;
             ElapsedTime = elapsedTime;
@@ -47,7 +45,6 @@ namespace OneHttpClient.Models
             }
 
             StatusCode = fullResponse.StatusCode;
-            IsSuccessStatusCode = fullResponse.IsSuccessStatusCode;
             ResponseBody = responseBody;
             ElapsedTime = elapsedTime;
 
@@ -71,9 +68,9 @@ namespace OneHttpClient.Models
         public HttpStatusCode StatusCode { get; }
 
         /// <summary>
-        /// Gets the flag that indicates whether the StatusCode represents a successful operation.
+        /// Indicates if the StatusCode represents a successful operation.
         /// </summary>
-        public bool IsSuccessStatusCode { get; }
+        public bool IsSuccessStatusCode => ((int) StatusCode >= 200) && ((int) StatusCode <= 299);
 
         /// <summary>
         /// Gets the response headers.
@@ -112,9 +109,9 @@ namespace OneHttpClient.Models
         /// <param name="elapsedTime">The time the request took to complete.</param>
         /// <remarks>
         /// HTTP status and headers are automatically read from <paramref name="fullResponse"/> 
-        /// and assigned to the properties <see cref="StatusCode"/> and <see cref="Headers"/> 
-        /// respectively, but <see cref="HttpRequestMessage.Content"/> is not read from message 
-        /// and must be passed in <paramref name="responseBody"/>.
+        /// and assigned to the properties StatusCode and Headers respectively, but 
+        /// <see cref="HttpRequestMessage.Content"/> is not read from message and must be passed 
+        /// in <paramref name="responseBody"/>.
         /// </remarks>
         public Response(HttpResponseMessage fullResponse, string responseBody, TData responseData, TimeSpan elapsedTime)
             : base(fullResponse, responseBody, elapsedTime)
