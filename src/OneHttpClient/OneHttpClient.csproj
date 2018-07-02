@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Patrick Svaiter</Authors>
+    <Version>1.0.0-beta-02</Version>
+    <RepositoryUrl>https://github.com/psvaiter/one-http-client/</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/psvaiter/one-http-client/</PackageProjectUrl>
+    <PackageTags>httpclient http client</PackageTags>
+    <Description>A wrapped HttpClient that solves common problems usually not noticed by developers.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\OneHttpClient.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+</Project>
