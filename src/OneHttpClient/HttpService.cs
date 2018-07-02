@@ -21,7 +21,7 @@ namespace OneHttpClient
 
         /// <summary>
         /// The amount of time in seconds to keep open an active connection.
-        /// Set to -1 (<see cref="Timeout.Infinite">) to keep the connection open forever as long as the connection is 
+        /// Set to -1 (<see cref="Timeout.Infinite"/>) to keep the connection open forever as long as the connection is 
         /// active.
         /// </summary>
         private static int _connectionLeaseTimeout;
