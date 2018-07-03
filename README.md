@@ -46,6 +46,10 @@ If you need complex scenarios like uploading multi-part content or accepting inv
 then there's a lot of frameworks out there that may serve you better. From what I saw, they are very 
 similar among them in the way to use.
 
+## Install
+
+The package is available at [NuGet.org](https://www.nuget.org/packages/OneHttpClient/). Follow the installation instructions.
+
 ## Usage
 
 - Inject the service interface as a dependency of a class that will make HTTP requests.
