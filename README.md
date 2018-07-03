@@ -13,7 +13,7 @@ developers to use the `using` structure in order to release resources after each
 which in fact is a problem if you care about the performance of your application.
 
 Some approaches to fix the bad use of `HttpClient` can lead to other problems that I explain briefly 
-on the [wiki](https://github.com/psvaiter/one-http-client/wiki). OneHttpClient package solves them all.
+on the [wiki](https://github.com/psvaiter/one-http-client/wiki). **OneHttpClient** package solves them all.
 
 ## Features
 
@@ -35,8 +35,8 @@ Every careful developer with good architecture knowledge will wrap dependencies 
 own interfaces, so it can be easily replaced with little maintenance effort. We can do it with 
 loggers, serializers, authenticators, event hub providers, etc. It's a good practice.
 
-How many times have you needed to replace some infrastructure component? Almost never, I bet.
-It's always a consequence of "What if one day I need to ...?" question. Usually you're right. Other times 
+Great, but how many times have you needed to replace some infrastructure component? Almost never, I bet.
+It's always a consequence of _"What if one day I need to ...?"_ question. Usually you're right. Other times 
 it's just too much, like in the case of HttpClient.
 
 Most applications need to do basic HTTP requests, a bunch of them, all the time, and that's all.
@@ -48,8 +48,8 @@ similar among them in the way to use.
 
 ## Usage
 
-Injects the service interface as a dependency of a class that will make HTTP requests.
-Call the service to make a request. Almost everything is "setup" at this time.
+- Inject the service interface as a dependency of a class that will make HTTP requests.
+- Call the service to make a request.
 
 ```csharp
 using OneHttpClient;
@@ -90,5 +90,4 @@ public class Authenticator
 }
 ```
 
-Do not serialize the request, OneHttpClient will do it for you.
-Response will be automatically deserialized to `AuthenticateResponse`.
+> Do not serialize the request, **OneHttpClient** will do it for you. Response will be automatically deserialized to `AuthenticateResponse`.
