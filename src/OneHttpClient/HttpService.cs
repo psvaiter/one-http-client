@@ -185,7 +185,7 @@ namespace OneHttpClient
                 catch (TaskCanceledException)
                 {
                     stopwatch.Stop();
-                    throw new TimeoutException($"The operation has timed out after {stopwatch.ElapsedMilliseconds} ms.");
+                    throw new TimeoutException($"The operation has timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
                 }
             }
         }
