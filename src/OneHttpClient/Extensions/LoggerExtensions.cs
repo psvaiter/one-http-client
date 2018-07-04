@@ -9,6 +9,21 @@ namespace OneHttpClient.Extensions
     /// </summary>
     public static class LoggerExtensions
     {
+        // Deletages created by LoggerMessage
+        private static readonly Action<ILogger, string, Exception> _requestStarting;
+        private static readonly Action<ILogger, double, int, Exception> _requestFinished;
+
+        // Named format string (template)
+        private static readonly string _requestStartingTemplate = "Request starting {RequestUri}";
+        private static readonly string _requestFinishedTemplate = "Request finished in {ElapsedMilliseconds} ms [{StatusCode}]";
+
+        static LoggerExtensions()
+        {
+            // Initialize delegates
+            _requestStarting = LoggerMessage.Define<string>(LogLevel.Information, 0, _requestStartingTemplate);
+            _requestFinished = LoggerMessage.Define<double, int>(LogLevel.Information, 0, _requestFinishedTemplate);
+        }
+
         /// <summary>
         /// Logs that an HTTP request is starting.
         /// </summary>
@@ -16,7 +31,7 @@ namespace OneHttpClient.Extensions
         /// <param name="uri">The URI to put in log message.</param>
         public static void RequestStarting(this ILogger logger, string uri)
         {
-            
+            _requestStarting(logger, uri, null);
         }
 
         /// <summary>
@@ -31,7 +46,7 @@ namespace OneHttpClient.Extensions
         /// </param>
         public static void RequestFinished(this ILogger logger, TimeSpan elapsedTime, HttpStatusCode statusCode)
         {
-
+            _requestFinished(logger, elapsedTime.TotalMilliseconds, (int) statusCode, null);
         }
     }
 }
