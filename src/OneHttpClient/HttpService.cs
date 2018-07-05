@@ -31,7 +31,7 @@ namespace OneHttpClient
         /// <summary>
         /// Logger that will be used to log events of the service.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpService> _logger;
 
         /// <summary>
         /// Class constructor.
