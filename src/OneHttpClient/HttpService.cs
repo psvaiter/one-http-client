@@ -184,16 +184,17 @@ namespace OneHttpClient
         {
             using (var cts = GetCancellationTokenSource(TimeSpan.FromSeconds(requestTimeout)))
             {
+                string guideNumber = GenerateGuideNumber();
                 var stopwatch = Stopwatch.StartNew();
                 try
                 {
-                    _logger?.RequestStarting(requestMessage);
+                    _logger?.RequestStarting(guideNumber, requestMessage);
 
                     var httpResponseMessage = await _httpClient.SendAsync(requestMessage, cts?.Token ?? CancellationToken.None);
                     string responseBody = await httpResponseMessage.Content.ReadAsStringAsync();
 
                     stopwatch.Stop();
-                    _logger?.RequestFinished(stopwatch.Elapsed, httpResponseMessage.StatusCode);
+                    _logger?.RequestFinished(guideNumber, stopwatch.Elapsed, httpResponseMessage.StatusCode);
 
                     return new Response(httpResponseMessage, responseBody, stopwatch.Elapsed);
                 }
@@ -207,6 +208,16 @@ namespace OneHttpClient
                     throw timeoutException;
                 }
             }
+        }
+
+        /// <summary>
+        /// Generates a random number that will be used as a guide to correlate a request to a response.
+        /// With this number it's easier to see to which request the elapsed time corresponds.
+        /// </summary>
+        /// <returns>The generated number as string.</returns>
+        private static string GenerateGuideNumber()
+        {
+            return Guid.NewGuid().ToString("N").Substring(0, 4).ToUpper();
         }
 
         /// <summary>
