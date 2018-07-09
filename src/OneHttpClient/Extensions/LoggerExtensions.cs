@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using Microsoft.Extensions.Logging;
 
 namespace OneHttpClient.Extensions
@@ -10,17 +11,17 @@ namespace OneHttpClient.Extensions
     public static class LoggerExtensions
     {
         // Deletages created by LoggerMessage
-        private static readonly Action<ILogger, string, Exception> _requestStarting;
+        private static readonly Action<ILogger, string, string, Exception> _requestStarting;
         private static readonly Action<ILogger, double, int, Exception> _requestFinished;
 
         // Named format string (template)
-        private static readonly string _requestStartingTemplate = "Request starting {RequestUri}";
+        private static readonly string _requestStartingTemplate = "Request starting {HttpMethod} {RequestUri}";
         private static readonly string _requestFinishedTemplate = "Request finished in {ElapsedMilliseconds} ms [{StatusCode}]";
 
         static LoggerExtensions()
         {
             // Initialize delegates
-            _requestStarting = LoggerMessage.Define<string>(LogLevel.Information, 0, _requestStartingTemplate);
+            _requestStarting = LoggerMessage.Define<string, string>(LogLevel.Information, 0, _requestStartingTemplate);
             _requestFinished = LoggerMessage.Define<double, int>(LogLevel.Information, 0, _requestFinishedTemplate);
         }
 
@@ -29,9 +30,12 @@ namespace OneHttpClient.Extensions
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="uri">The URI to put in log message.</param>
-        public static void RequestStarting(this ILogger logger, string uri)
+        public static void RequestStarting(this ILogger logger, HttpRequestMessage httpRequestMessage)
         {
-            _requestStarting(logger, uri, null);
+            string httpMethod = httpRequestMessage.Method.ToString();
+            string uri = httpRequestMessage.RequestUri.ToString();
+
+            _requestStarting(logger, httpMethod, uri, null);
         }
 
         /// <summary>

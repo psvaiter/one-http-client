@@ -187,7 +187,7 @@ namespace OneHttpClient
                 var stopwatch = Stopwatch.StartNew();
                 try
                 {
-                    _logger?.RequestStarting(requestMessage.RequestUri.ToString());
+                    _logger?.RequestStarting(requestMessage);
 
                     var httpResponseMessage = await _httpClient.SendAsync(requestMessage, cts?.Token ?? CancellationToken.None);
                     string responseBody = await httpResponseMessage.Content.ReadAsStringAsync();
