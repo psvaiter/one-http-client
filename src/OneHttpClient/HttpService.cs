@@ -185,10 +185,12 @@ namespace OneHttpClient
             using (var cts = GetCancellationTokenSource(TimeSpan.FromSeconds(requestTimeout)))
             {
                 string guideNumber = GenerateGuideNumber();
-                var stopwatch = Stopwatch.StartNew();
+                var stopwatch = new Stopwatch();
+
                 try
                 {
                     _logger?.RequestStarting(guideNumber, requestMessage);
+                    stopwatch.Start();
 
                     var httpResponseMessage = await _httpClient.SendAsync(requestMessage, cts?.Token ?? CancellationToken.None);
                     string responseBody = await httpResponseMessage.Content.ReadAsStringAsync();
@@ -202,7 +204,8 @@ namespace OneHttpClient
                 {
                     stopwatch.Stop();
 
-                    var timeoutException = new TimeoutException($"The operation has timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
+                    var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
+                    timeoutException.Data.Add("GuideNumber", guideNumber);
                     timeoutException.Data.Add("ElapsedMilliseconds", stopwatch.Elapsed.TotalMilliseconds);
 
                     throw timeoutException;
