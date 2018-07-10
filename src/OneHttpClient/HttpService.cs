@@ -228,7 +228,7 @@ namespace OneHttpClient
         /// <returns>The generated number as string.</returns>
         private static string GenerateGuideNumber()
         {
-            return Guid.NewGuid().ToString("N").Substring(0, 4).ToUpper();
+            return Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
         }
 
         /// <summary>
