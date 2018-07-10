@@ -176,9 +176,14 @@ namespace OneHttpClient
         /// </param>
         /// <returns>The response from server with the time it took to complete.</returns>
         /// <remarks>
+        /// <para>
         /// The <paramref name="requestTimeout"/> will only be effective if it's value is less than default timeout
         /// configured during initialization of <see cref="_httpClient"/>. Otherwise the default timeout will take 
         /// place. When <paramref name="requestTimeout"/> is zero the per-request basis timeout is not even configured.
+        /// </para>
+        /// <para>
+        /// Currently it's not possible to cancel a request by any means other than timeout.
+        /// </para>
         /// </remarks>
         private async Task<Response> SendRequest(HttpRequestMessage requestMessage, int requestTimeout = 0)
         {
@@ -203,6 +208,9 @@ namespace OneHttpClient
                 catch (TaskCanceledException)
                 {
                     stopwatch.Stop();
+                    
+                    // Replace the current exception with the basic message "A task was canceled" 
+                    // by a more appropriate and more explanatory one.
 
                     var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
                     timeoutException.Data.Add("GuideNumber", guideNumber);
