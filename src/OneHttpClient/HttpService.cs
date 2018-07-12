@@ -37,10 +37,11 @@ namespace OneHttpClient
         /// Class constructor.
         /// </summary>
         /// <param name="defaultRequestTimeout">
-        /// Default timeout in seconds to use on all HTTP requests made by this service.
+        /// Default timeout to use on all HTTP requests made by this service. The default is 100 seconds.
+        /// Lower timeouts informed via <see cref="HttpRequestOptions"/> has precedence over the default timeout.
         /// </param>
         /// <param name="connectionLeaseTimeout">
-        /// Number of seconds after which an active connection should be closed. Requests in progress when timeout is 
+        /// Amount of time after which an active connection should be closed. Requests in progress when timeout is 
         /// reached are not affected. The default is 10 minutes.
         /// </param>
         /// <param name="logger">
@@ -52,15 +53,19 @@ namespace OneHttpClient
         /// to be open all the time due to activity (like being reused before idle timeout is reached. That's because 
         /// <see cref="HttpClient"/> will not perform a DNS lookup while the connection is already established.
         /// </remarks>
-        public HttpService(int defaultRequestTimeout = 100, int connectionLeaseTimeout = 10 * 60, ILogger<HttpService> logger = null)
+        public HttpService(TimeSpan? defaultRequestTimeout = null, TimeSpan? connectionLeaseTimeout = null, ILogger<HttpService> logger = null)
         {
-            _httpClient.Timeout = TimeSpan.FromSeconds(defaultRequestTimeout);
-            _connectionLeaseTimeout = (connectionLeaseTimeout == Timeout.Infinite)
-                ? Timeout.InfiniteTimeSpan
-                : TimeSpan.FromSeconds(connectionLeaseTimeout);
+            _httpClient.Timeout = (defaultRequestTimeout == null)
+                ? Constants.DefaultRequestTimeout
+                : defaultRequestTimeout.Value;
+
+            _connectionLeaseTimeout = (connectionLeaseTimeout == null)
+                ? Constants.DefaultConnectionLeaseTimeout
+                : connectionLeaseTimeout.Value;
+
             _logger = logger;
-            
-            ServicePointManager.DefaultConnectionLimit = 10;
+
+            ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
         }
 
         /// <summary>
