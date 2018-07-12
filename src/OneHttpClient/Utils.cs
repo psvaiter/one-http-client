@@ -9,6 +9,9 @@ using System.Text;
 
 namespace OneHttpClient
 {
+    /// <summary>
+    /// Utility methods.
+    /// </summary>
     public class Utils
     {
         /// <summary>
@@ -72,6 +75,7 @@ namespace OneHttpClient
         /// <param name="namingStrategy">The stategy to use when serializing property names.
         /// Default is <see cref="NamingStrategyEnum.CamelCase"/>.
         /// </param>
+        /// <param name="nullValueHandling">Tells whether to include or ignore null values when (de)serializing.</param>
         /// <returns>The deserialized object or default value of type.</returns>
         public static TResponse TryDeserializeResponseBody<TResponse>
             (
@@ -117,6 +121,7 @@ namespace OneHttpClient
         /// Gets the JSON serializer settings and sets the naming strategy supplied.
         /// </summary>
         /// <param name="strategy">The naming strategy to be used during serialization.</param>
+        /// <param name="nullValueHandling">Tells whether to include or ignore null values when (de)serializing.</param>
         /// <returns>The serializer settings of Newtonsoft.Json.</returns>
         private static JsonSerializerSettings GetJsonSerializerSettings(NamingStrategyEnum strategy, NullValueHandling nullValueHandling)
         {
