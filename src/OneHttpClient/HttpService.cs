@@ -1,11 +1,13 @@
-﻿using OneHttpClient.Models;
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using OneHttpClient.Extensions;
+using OneHttpClient.Models;
 
 namespace OneHttpClient
 {
@@ -27,6 +29,11 @@ namespace OneHttpClient
         private static int _connectionLeaseTimeout;
 
         /// <summary>
+        /// Logger that will be used to log events of the service.
+        /// </summary>
+        private readonly ILogger<HttpService> _logger;
+
+        /// <summary>
         /// Class constructor.
         /// </summary>
         /// <param name="defaultRequestTimeout">
@@ -36,16 +43,20 @@ namespace OneHttpClient
         /// Number of seconds after which an active connection should be closed. Requests in progress when timeout is 
         /// reached are not affected. The default is 10 minutes.
         /// </param>
+        /// <param name="logger">
+        /// Implementation of <see cref="ILogger"/> that will be used for logging events.
+        /// </param>
         /// <remarks>
         /// Connection lease timeout can be set to <see cref="Timeout.Infinite"/>. It's important to note that doing 
         /// this can lead to problems detecting DNS changes. This problem is likely to occur when a connection tends 
         /// to be open all the time due to activity (like being reused before idle timeout is reached. That's because 
         /// <see cref="HttpClient"/> will not perform a DNS lookup while the connection is already established.
         /// </remarks>
-        public HttpService(int defaultRequestTimeout = 100, int connectionLeaseTimeout = 10 * 60)
+        public HttpService(int defaultRequestTimeout = 100, int connectionLeaseTimeout = 10 * 60, ILogger<HttpService> logger = null)
         {
             _httpClient.Timeout = TimeSpan.FromSeconds(defaultRequestTimeout);
             _connectionLeaseTimeout = connectionLeaseTimeout;
+            _logger = logger;
             
             ServicePointManager.DefaultConnectionLimit = 10;
         }
@@ -165,29 +176,59 @@ namespace OneHttpClient
         /// </param>
         /// <returns>The response from server with the time it took to complete.</returns>
         /// <remarks>
+        /// <para>
         /// The <paramref name="requestTimeout"/> will only be effective if it's value is less than default timeout
         /// configured during initialization of <see cref="_httpClient"/>. Otherwise the default timeout will take 
         /// place. When <paramref name="requestTimeout"/> is zero the per-request basis timeout is not even configured.
+        /// </para>
+        /// <para>
+        /// Currently it's not possible to cancel a request by any means other than timeout.
+        /// </para>
         /// </remarks>
         private async Task<Response> SendRequest(HttpRequestMessage requestMessage, int requestTimeout = 0)
         {
             using (var cts = GetCancellationTokenSource(TimeSpan.FromSeconds(requestTimeout)))
             {
-                var stopwatch = Stopwatch.StartNew();
+                string guideNumber = GenerateGuideNumber();
+                var stopwatch = new Stopwatch();
+
                 try
                 {
-                    var response = await _httpClient.SendAsync(requestMessage, cts?.Token ?? CancellationToken.None);
-                    string responseBody = await response.Content.ReadAsStringAsync();
+                    _logger?.RequestStarting(guideNumber, requestMessage);
+                    stopwatch.Start();
+
+                    var httpResponseMessage = await _httpClient.SendAsync(requestMessage, cts?.Token ?? CancellationToken.None);
+                    string responseBody = await httpResponseMessage.Content.ReadAsStringAsync();
 
                     stopwatch.Stop();
-                    return new Response(response, responseBody, stopwatch.Elapsed);
+                    _logger?.RequestFinished(guideNumber, stopwatch.Elapsed, httpResponseMessage.StatusCode);
+
+                    return new Response(httpResponseMessage, responseBody, stopwatch.Elapsed);
                 }
                 catch (TaskCanceledException)
                 {
                     stopwatch.Stop();
-                    throw new TimeoutException($"The operation has timed out after {stopwatch.ElapsedMilliseconds} ms.");
+                    
+                    // Replace the current exception with the basic message "A task was canceled" 
+                    // by a more appropriate and more explanatory one.
+
+                    var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
+                    timeoutException.Data.Add("GuideNumber", guideNumber);
+                    timeoutException.Data.Add("ElapsedMilliseconds", stopwatch.Elapsed.TotalMilliseconds);
+
+                    throw timeoutException;
                 }
             }
+        }
+
+        /// <summary>
+        /// Generates a random number that will be used as a guide to correlate a request to a response.
+        /// With this number it's easier to see to which request the elapsed time corresponds.
+        /// </summary>
+        /// <returns>The generated number as string.</returns>
+        private static string GenerateGuideNumber()
+        {
+            return Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
         }
 
         /// <summary>
