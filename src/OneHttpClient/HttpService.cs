@@ -22,11 +22,11 @@ namespace OneHttpClient
         private static HttpClient _httpClient = new HttpClient();
 
         /// <summary>
-        /// The amount of time in seconds to keep open an active connection.
-        /// Set to -1 (<see cref="Timeout.Infinite"/>) to keep the connection open forever as long as the connection is 
-        /// active.
+        /// The amount of time to keep open an active connection.
+        /// Set to <see cref="Timeout.InfiniteTimeSpan"/> to keep the connection open forever as long as the 
+        /// connection is active.
         /// </summary>
-        private static int _connectionLeaseTimeout;
+        private static TimeSpan _connectionLeaseTimeout;
 
         /// <summary>
         /// Logger that will be used to log events of the service.
@@ -55,7 +55,9 @@ namespace OneHttpClient
         public HttpService(int defaultRequestTimeout = 100, int connectionLeaseTimeout = 10 * 60, ILogger<HttpService> logger = null)
         {
             _httpClient.Timeout = TimeSpan.FromSeconds(defaultRequestTimeout);
-            _connectionLeaseTimeout = connectionLeaseTimeout;
+            _connectionLeaseTimeout = (connectionLeaseTimeout == Timeout.Infinite)
+                ? Timeout.InfiniteTimeSpan
+                : TimeSpan.FromSeconds(connectionLeaseTimeout);
             _logger = logger;
             
             ServicePointManager.DefaultConnectionLimit = 10;
@@ -125,11 +127,9 @@ namespace OneHttpClient
         private void SetActiveConnectionTimeout(string url)
         {
             // Note this cannot be set globally, only per service point.
-            // But the timeout value used is global for this service.
+            // However the timeout value used is the same for all service points.
             var servicePoint = ServicePointManager.FindServicePoint(url, null);
-            servicePoint.ConnectionLeaseTimeout = (_connectionLeaseTimeout == Timeout.Infinite)
-                ? Timeout.Infinite
-                : (_connectionLeaseTimeout * 1000);
+            servicePoint.ConnectionLeaseTimeout = (int) _connectionLeaseTimeout.TotalMilliseconds;
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace OneHttpClient
         /// <param name="url">URL to send request message.</param>
         /// <param name="data">Object containing data to be sent.</param>
         /// <param name="headers">Headers of request message.</param>
-        /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
+        /// <param name="options">Advanced request options. See <see cref="HttpRequestOptions"/> for more details.</param>
         /// <returns>The <see cref="HttpRequestMessage"/> object.</returns>
         private HttpRequestMessage BuildRequestMessage(HttpMethodEnum method, string url, object data, NameValueCollection headers, HttpRequestOptions options)
         {
