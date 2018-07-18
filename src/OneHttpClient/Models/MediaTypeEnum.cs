@@ -2,7 +2,8 @@
 {
     public enum MediaTypeEnum
     {
-        Undefined = 0,
+        RawBytes = 0,
+        RawString,
         PlainText,
         JSON,
         XML,

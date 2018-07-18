@@ -32,6 +32,11 @@ namespace OneHttpClient
                 return null;
             }
 
+            if (options.MediaType == MediaTypeEnum.RawString)
+            {
+                return new StringContent(data as string, Encoding.UTF8);
+            }
+
             if (options.MediaType == MediaTypeEnum.PlainText)
             {
                 return new StringContent(data as string, Encoding.UTF8, "text/plain");
