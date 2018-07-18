@@ -209,6 +209,12 @@ namespace OneHttpClient
             }
         }
 
+        /// <summary>
+        /// Deserializes XML to object of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of target object.</typeparam>
+        /// <param name="xml">XML string to be deserialized.</param>
+        /// <returns>The deserialized object when successful. The default value of type otherwise.</returns>
         private static T TryDeserializeXml<T>(string xml)
         {
             try
