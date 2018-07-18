@@ -147,7 +147,7 @@ namespace OneHttpClient.UnitTests
         public void Send_POST_json_data_should_return_200_with_data_sent()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
             var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
@@ -184,7 +184,7 @@ namespace OneHttpClient.UnitTests
         public void Send_POST_wihtout_json_data_should_return_200_without_content()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = (string) null;
             var expectedResponseBody = string.Empty;
 
             var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null).Result;
@@ -202,7 +202,7 @@ namespace OneHttpClient.UnitTests
         public void Send_POST_wihtout_string_data_should_return_200_without_content()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = (string) null;
             var expectedResponseBody = string.Empty;
             var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.PlainText };
 
@@ -221,7 +221,7 @@ namespace OneHttpClient.UnitTests
         public void Send_PUT_data_should_return_200_with_data_sent()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
             var response = _httpService.Send(HttpMethodEnum.PUT, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
@@ -239,7 +239,7 @@ namespace OneHttpClient.UnitTests
         public void Send_PATCH_data_should_return_200_with_data_sent()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
             var response = _httpService.Send(HttpMethodEnum.PATCH, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
@@ -289,7 +289,7 @@ namespace OneHttpClient.UnitTests
             Equal(HttpServerFixture.SampleText, response.ResponseData.ServerMessage);
         }
 
-        [Fact( DisplayName = "HttpService should throw on timeout.")]
+        [Fact(DisplayName = "HttpService should throw on timeout.")]
         [Trait("Category", "GET")]
         public void Send_should_throw_on_timeout()
         {
