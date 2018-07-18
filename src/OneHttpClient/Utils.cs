@@ -61,36 +61,6 @@ namespace OneHttpClient
         }
 
         /// <summary>
-        /// Serializes an object to a XML string (with UTF-8 encoding).
-        /// </summary>
-        /// <param name="data">Object to serialize.</param>
-        /// <returns>Valid XML string.</returns>
-        private static string SerializeToXml(object data)
-        {
-            var encoding = Encoding.UTF8;
-
-            var xmlSerializer = new XmlSerializer(data.GetType());
-            var xmlSettings = new XmlWriterSettings()
-            {
-                Encoding = encoding, // it's here to decorate because nothing changes if removed
-                Indent = false
-            };
-            
-            using (var memoryStream = new MemoryStream())
-            {
-                using (var textWriter = new StreamWriter(memoryStream, encoding))
-                {
-                    using (var xmlWriter = XmlWriter.Create(textWriter, xmlSettings))
-                    {
-                        xmlSerializer.Serialize(xmlWriter, data);
-                    }
-                }
-
-                return encoding.GetString(memoryStream.ToArray());
-            }
-        }
-
-        /// <summary>
         /// Converts an object to byte array.
         /// </summary>
         /// <param name="obj">The object to be converted.</param>
@@ -135,6 +105,11 @@ namespace OneHttpClient
                 if (contentType?.Contains("application/json") == true)
                 {
                     return TryDeserializeJson<TResponse>(responseBody, GetJsonSerializerSettings(namingStrategy, nullValueHandling));
+                }
+
+                if (contentType?.Contains("application/xml") == true)
+                {
+                    return TryDeserializeXml<TResponse>(responseBody);
                 }
             }
 
@@ -202,6 +177,60 @@ namespace OneHttpClient
                 ProcessDictionaryKeys = true,
                 OverrideSpecifiedNames = true
             };
+        }
+
+        /// <summary>
+        /// Serializes an object to a XML string (with UTF-8 encoding).
+        /// </summary>
+        /// <param name="data">Object to serialize.</param>
+        /// <returns>Valid XML string.</returns>
+        private static string SerializeToXml(object data)
+        {
+            var encoding = Encoding.UTF8;
+
+            var xmlSerializer = new XmlSerializer(data.GetType());
+            var xmlSettings = new XmlWriterSettings()
+            {
+                Encoding = encoding, // it's here to decorate because nothing changes if removed
+                Indent = false
+            };
+
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var textWriter = new StreamWriter(memoryStream, encoding))
+                {
+                    using (var xmlWriter = XmlWriter.Create(textWriter, xmlSettings))
+                    {
+                        xmlSerializer.Serialize(xmlWriter, data);
+                    }
+                }
+
+                return encoding.GetString(memoryStream.ToArray());
+            }
+        }
+
+        private static T TryDeserializeXml<T>(string xml)
+        {
+            try
+            {
+                var encoding = Encoding.UTF8;
+                var xmlSerializer = new XmlSerializer(typeof(T));
+
+                using (var memoryStream = new MemoryStream(encoding.GetBytes(xml)))
+                {
+                    using (var textReader = new StreamReader(memoryStream, encoding))
+                    {
+                        using (var xmlReader = XmlReader.Create(textReader))
+                        {
+                            return (T) xmlSerializer.Deserialize(xmlReader);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                return default(T);
+            }
         }
     }
 }

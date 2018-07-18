@@ -96,6 +96,29 @@ namespace OneHttpClient.UnitTests
             Equal(HttpServerFixture.SampleObject.ServerMessage, response.ResponseData.ServerMessage);
         }
 
+        [Fact(DisplayName = "GET XML should have deserialized response successfully when requested.")]
+        [Trait("Category", "GET")]
+        public void Send_GET_xml_deserialized_should_return_200()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = "application/xml";
+            var expectedResponseBody = HttpServerFixture.SampleTextXml;
+            var options = new HttpRequestOptions { MediaType = MediaTypeEnum.XML };
+
+            var response = _httpService.Send<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/xml", options: options).Result;
+
+            //Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equals(expectedStatusCode, (int) response.StatusCode);
+            Equals(expectedResponseBody, response.ResponseBody);
+            Contains(expectedContentType, response.Headers.Get("Content-Type"));
+
+            NotNull(response.ResponseData);
+            Equal(HttpServerFixture.SampleObject.Success, response.ResponseData.Success);
+            Equal(HttpServerFixture.SampleObject.ServerMessage, response.ResponseData.ServerMessage);
+        }
+
         [Fact(DisplayName = "GET should return the response without data deserialized when JSON is invalid.")]
         [Trait("Category", "GET")]
         public void Send_GET_invalid_json_deserialized_should_return_200_without_data_deserialized()
