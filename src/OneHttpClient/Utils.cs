@@ -38,11 +38,6 @@ namespace OneHttpClient
                 return new StringContent(data as string);
             }
 
-            if (options.MediaType == MediaTypeEnum.PlainText)
-            {
-                return new StringContent(data as string, Encoding.UTF8, "text/plain");
-            }
-
             if (options.MediaType == MediaTypeEnum.JSON)
             {
                 var serializerSettings = GetJsonSerializerSettings(options.NamingStrategy, options.NullValueHandling);
@@ -55,6 +50,11 @@ namespace OneHttpClient
             {
                 string serializedData = SerializeToXml(data, Encoding.UTF8);
                 return new StringContent(serializedData, Encoding.UTF8, "application/xml");
+            }
+
+            if (options.MediaType == MediaTypeEnum.PlainText)
+            {
+                return new StringContent(data as string, Encoding.UTF8, "text/plain");
             }
 
             return new ByteArrayContent(CovnertToByteArray(data));
