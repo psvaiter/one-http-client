@@ -60,6 +60,11 @@ namespace OneHttpClient
             return new ByteArrayContent(CovnertToByteArray(data));
         }
 
+        /// <summary>
+        /// Serializes an object to a XML string (with UTF-8 encoding).
+        /// </summary>
+        /// <param name="data">Object to serialize.</param>
+        /// <returns>Valid XML string.</returns>
         private static string SerializeToXml(object data)
         {
             var encoding = Encoding.UTF8;
@@ -67,7 +72,7 @@ namespace OneHttpClient
             var xmlSerializer = new XmlSerializer(data.GetType());
             var xmlSettings = new XmlWriterSettings()
             {
-                Encoding = Encoding.UTF8,
+                Encoding = encoding, // it's here to decorate because nothing changes if removed
                 Indent = false
             };
             
