@@ -6,6 +6,7 @@ using System.IO;
 using System.Net.Http;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace OneHttpClient
 {
@@ -42,6 +43,18 @@ namespace OneHttpClient
                 string serializedData = JsonConvert.SerializeObject(data, serializerSettings);
 
                 return new StringContent(serializedData, Encoding.UTF8, "application/json");
+            }
+
+            if (options.MediaType == MediaTypeEnum.XML)
+            {
+                using (var writer = new StringWriter())
+                {
+                    var serializer = new XmlSerializer(data.GetType());
+                    serializer.Serialize(writer, data);
+                    string serializedData = writer.ToString();
+
+                    return new StringContent(serializedData, Encoding.UTF8, "application/xml");
+                }
             }
 
             return new ByteArrayContent(CovnertToByteArray(data));

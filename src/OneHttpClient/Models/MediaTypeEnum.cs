@@ -5,7 +5,7 @@
         Undefined = 0,
         PlainText,
         JSON,
-        //XML,
+        XML,
         //MessagePack
     }
 }
