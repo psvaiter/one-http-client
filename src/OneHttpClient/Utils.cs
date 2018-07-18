@@ -35,7 +35,7 @@ namespace OneHttpClient
 
             if (options.MediaType == MediaTypeEnum.RawString)
             {
-                return new StringContent(data as string, Encoding.UTF8);
+                return new StringContent(data as string);
             }
 
             if (options.MediaType == MediaTypeEnum.PlainText)
@@ -53,7 +53,7 @@ namespace OneHttpClient
 
             if (options.MediaType == MediaTypeEnum.XML)
             {
-                string serializedData = SerializeToXml(data);
+                string serializedData = SerializeToXml(data, Encoding.UTF8);
                 return new StringContent(serializedData, Encoding.UTF8, "application/xml");
             }
 
@@ -109,7 +109,7 @@ namespace OneHttpClient
 
                 if (contentType?.Contains("application/xml") == true)
                 {
-                    return TryDeserializeXml<TResponse>(responseBody);
+                    return TryDeserializeXml<TResponse>(responseBody, Encoding.UTF8);
                 }
             }
 
@@ -183,11 +183,10 @@ namespace OneHttpClient
         /// Serializes an object to a XML string (with UTF-8 encoding).
         /// </summary>
         /// <param name="data">Object to serialize.</param>
+        /// <param name="encoding">The encoding of result XML string.</param>
         /// <returns>Valid XML string.</returns>
-        private static string SerializeToXml(object data)
+        private static string SerializeToXml(object data, Encoding encoding)
         {
-            var encoding = Encoding.UTF8;
-
             var xmlSerializer = new XmlSerializer(data.GetType());
             var xmlSettings = new XmlWriterSettings()
             {
@@ -214,12 +213,12 @@ namespace OneHttpClient
         /// </summary>
         /// <typeparam name="T">Type of target object.</typeparam>
         /// <param name="xml">XML string to be deserialized.</param>
+        /// <param name="encoding">The encoding of text in <paramref name="xml"/> parameter.</param>
         /// <returns>The deserialized object when successful. The default value of type otherwise.</returns>
-        private static T TryDeserializeXml<T>(string xml)
+        private static T TryDeserializeXml<T>(string xml, Encoding encoding)
         {
             try
             {
-                var encoding = Encoding.UTF8;
                 var xmlSerializer = new XmlSerializer(typeof(T));
 
                 using (var memoryStream = new MemoryStream(encoding.GetBytes(xml)))
