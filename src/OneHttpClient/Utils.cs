@@ -212,6 +212,10 @@ namespace OneHttpClient
 
                 return encoding.GetString(memoryStream.ToArray());
             }
+
+            // Note: Microsoft recommends using XmlWriter instead of XmlTextWriter.
+            // That's why it's being used here.
+            // XmlTextWriter would turn StreamWriter + XmlWriter into a single step.
         }
 
         /// <summary>
