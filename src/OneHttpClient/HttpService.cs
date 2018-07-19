@@ -164,6 +164,7 @@ namespace OneHttpClient
                 foreach (string key in headers.Keys)
                 {
                     message.Headers.TryAddWithoutValidation(key, headers[key]);
+                    message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
                 }
             }
         }
