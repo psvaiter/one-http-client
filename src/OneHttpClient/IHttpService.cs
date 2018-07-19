@@ -19,7 +19,7 @@ namespace OneHttpClient
         /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns><see cref="Response"/> with data from HTTP response.</returns>
-        Task<Response> Send(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response> SendAsync(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP request message, gets the reponse and tries to deserialize it to a given type.
@@ -31,7 +31,7 @@ namespace OneHttpClient
         /// <param name="timeoutInSeconds">Amount of time in seconds to wait before cancelling request. When 0 the default timeout will be used.</param>
         /// <param name="namingStrategy">The stategy to use when serializing property names. Default is <see cref="NamingStrategyEnum.CamelCase"/>.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        Task<Response<TResponse>> Send<TResponse>(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response<TResponse>> SendAsync<TResponse>(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP GET request message.
@@ -40,7 +40,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response"/> with data from HTTP response.</returns>
-        Task<Response> Get(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response> GetAsync(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP GET request message.
@@ -49,7 +49,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        Task<Response<TResponse>> Get<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response<TResponse>> GetAsync<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP POST request message.
@@ -59,7 +59,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response"/> with data from HTTP response.</returns>
-        Task<Response> Post(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response> PostAsync(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP POST request message.
@@ -69,7 +69,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        Task<Response<TResponse>> Post<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response<TResponse>> PostAsync<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP PUT request message.
@@ -79,7 +79,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response"/> with data from HTTP response.</returns>
-        Task<Response> Put(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response> PutAsync(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP PUT request message.
@@ -89,7 +89,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        Task<Response<TResponse>> Put<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response<TResponse>> PutAsync<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP PATCH request message.
@@ -99,7 +99,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response"/> with data from HTTP response.</returns>
-        Task<Response> Patch(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response> PatchAsync(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP PATCH request message.
@@ -109,7 +109,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        Task<Response<TResponse>> Patch<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response<TResponse>> PatchAsync<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP DELETE request message.
@@ -118,7 +118,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response"/> with data from HTTP response.</returns>
-        Task<Response> Delete(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response> DeleteAsync(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
 
         /// <summary>
         /// Sends HTTP DELETE request message.
@@ -127,6 +127,6 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">(Optional) Additional request configurations. If not informed, the default will be used.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        Task<Response<TResponse>> Delete<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
+        Task<Response<TResponse>> DeleteAsync<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null);
     }
 }

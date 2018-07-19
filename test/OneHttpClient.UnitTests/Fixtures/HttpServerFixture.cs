@@ -14,6 +14,7 @@ namespace OneHttpClient.UnitTests.Fixtures
         public readonly static string SampleText = "You made it!";
         public readonly static string SampleTextJson = "{\"success\":true,\"serverMessage\":\"You made it!\"}";
         public readonly static string SampleTextJsonSnakeCase = "{\"success\":true,\"server_message\":\"You made it!\"}";
+        public readonly static string SampleTextXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?><OperationResponseFixture xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><Success>true</Success><ServerMessage>You made it!</ServerMessage></OperationResponseFixture>";
         public readonly static OperationResponseFixture SampleObject = new OperationResponseFixture() { Success = true, ServerMessage = SampleText };
 
         public HttpServerFixture()
@@ -24,7 +25,8 @@ namespace OneHttpClient.UnitTests.Fixtures
                 new MockHttpHandler("/empty", (req, resp, param) => resp.StatusCode(200).ContentType("text/plain").Content("")),
                 new MockHttpHandler("/text", (req, resp, param) => resp.StatusCode(200).ContentType("text/plain").Content(SampleText)),
                 new MockHttpHandler("/json", (req, resp, param) => resp.StatusCode(200).ContentType("application/json").Content(SampleTextJson)),
-                new MockHttpHandler("/echo", (req, resp, param) => resp.StatusCode(200).ContentType("application/json").Content(req.Content())),
+                new MockHttpHandler("/xml", (req, resp, param) => resp.StatusCode(200).ContentType("application/xml").Content(SampleTextXml)),
+                new MockHttpHandler("/echo", (req, resp, param) => resp.StatusCode(200).ContentType(req.ContentType).Content(req.Content())),
                 new MockHttpHandler("/invalid-json", (req, resp, param) => resp.StatusCode(200).ContentType("application/json").Content(SampleText)),
                 new MockHttpHandler("/internal-server-error", (req, resp, param) => resp.StatusCode(500).Content("")),
                 new MockHttpHandler("/timeout", (req, resp, param) => Thread.Sleep(SampleDelayInSeconds * 1000)),

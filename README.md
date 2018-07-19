@@ -93,5 +93,6 @@ public class Authenticator
     }
 }
 ```
-
-> Do not serialize the request, **OneHttpClient** will do it for you. Response will be automatically deserialized to `AuthenticateResponse`.
+In the example above the response body will be automatically deserialized to `response.ResponseData` as an instance of `AuthenticateResponse` and will also be available in `response.ResponseBody` as a string. If the non-generic overload was used, the response body would only be available as a string and no deserialization would be attempted.
+ 
+> Do not serialize the request, **OneHttpClient** will do it for you.

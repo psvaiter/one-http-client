@@ -33,11 +33,11 @@ namespace TestConsoleApp
             _logger.LogInformation("Testing OneHttpClient...");
 
             Task.WaitAll(
-                _http.Get("https://jsonplaceholder.typicode.com/posts/1"),
-                _http.Post("https://jsonplaceholder.typicode.com/posts/1"),
-                _http.Put("https://jsonplaceholder.typicode.com/posts/1"),
-                _http.Patch("https://jsonplaceholder.typicode.com/posts/1"),
-                _http.Delete("https://jsonplaceholder.typicode.com/posts/1")
+                _http.GetAsync("https://jsonplaceholder.typicode.com/posts/1"),
+                _http.PostAsync("https://jsonplaceholder.typicode.com/posts/1"),
+                _http.PutAsync("https://jsonplaceholder.typicode.com/posts/1"),
+                _http.PatchAsync("https://jsonplaceholder.typicode.com/posts/1"),
+                _http.DeleteAsync("https://jsonplaceholder.typicode.com/posts/1")
             );
 
             return Ok();
@@ -47,7 +47,7 @@ namespace TestConsoleApp
         public async Task<IActionResult> TestTimes(int iterationCount = 10)
         {
             // Warmup
-            await _http.Get("https://jsonplaceholder.typicode.com/posts");
+            await _http.GetAsync("https://jsonplaceholder.typicode.com/posts");
 
             // Max out the iteration count
             if (iterationCount > 50)
@@ -60,7 +60,7 @@ namespace TestConsoleApp
             for (int i = 0; i < iterationCount; i++)
             {
                 var stopwatch = Stopwatch.StartNew();
-                var response = await _http.Get("https://jsonplaceholder.typicode.com/posts");
+                var response = await _http.GetAsync("https://jsonplaceholder.typicode.com/posts");
                 stopwatch.Stop();
 
                 elapsedTimes.Add(response.ElapsedTime.TotalMilliseconds, stopwatch.Elapsed.TotalMilliseconds);
