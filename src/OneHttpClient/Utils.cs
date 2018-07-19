@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -29,41 +28,50 @@ namespace OneHttpClient
         /// <returns></returns>
         public static HttpContent CreateHttpContent(object data, HttpRequestOptions options)
         {
+            var encoding = Encoding.UTF8;
+
             if (data == null)
             {
                 return null;
             }
 
-            if (options.MediaType == MediaTypeEnum.RawString)
-            {
-                if (data is string)
-                {
-                    return new StringContent(data as string);
-                }
-                
-                throw new ArgumentException($"The argument '{nameof(data)}' was expected to be a string but is of another type.");
-            }
-
             if (options.MediaType == MediaTypeEnum.JSON)
             {
-                var serializerSettings = GetJsonSerializerSettings(options.NamingStrategy, options.NullValueHandling);
-                string serializedData = JsonConvert.SerializeObject(data, serializerSettings);
-
-                return new StringContent(serializedData, Encoding.UTF8, "application/json");
+                string serializedData = SerializeToJson(data, options);
+                return new StringContent(serializedData, encoding, "application/json");
             }
 
             if (options.MediaType == MediaTypeEnum.XML)
             {
-                string serializedData = SerializeToXml(data, Encoding.UTF8);
-                return new StringContent(serializedData, Encoding.UTF8, "application/xml");
+                string serializedData = SerializeToXml(data, encoding);
+                return new StringContent(serializedData, encoding, "application/xml");
             }
 
             if (options.MediaType == MediaTypeEnum.PlainText)
             {
-                return new StringContent(data as string, Encoding.UTF8, "text/plain");
+                return new StringContent(data as string, encoding, "text/plain");
             }
 
-            return new ByteArrayContent(CovnertToByteArray(data));
+            if (options.MediaType == MediaTypeEnum.OtherText)
+            {
+                return new ByteArrayContent(encoding.GetBytes(data as string));
+            }
+
+            // RawBytes
+            return new ByteArrayContent(ConvertToByteArray(data));
+        }
+
+        /// <summary>
+        /// Serializes data to JSON.
+        /// </summary>
+        /// <param name="data">Object to be serialized.</param>
+        /// <param name="options">Serialization options for request.</param>
+        /// <returns>A string formatted as JSON.</returns>
+        private static string SerializeToJson(object data, HttpRequestOptions options)
+        {
+            var serializerSettings = GetJsonSerializerSettings(options.NamingStrategy, options.NullValueHandling);
+            string serializedData = JsonConvert.SerializeObject(data, serializerSettings);
+            return serializedData;
         }
 
         /// <summary>
@@ -71,13 +79,13 @@ namespace OneHttpClient
         /// </summary>
         /// <param name="obj">The object to be converted.</param>
         /// <returns>The byte array.</returns>
-        public static byte[] CovnertToByteArray(object obj)
+        public static byte[] ConvertToByteArray(object obj)
         {
-            var bf = new BinaryFormatter();
-            using (var ms = new MemoryStream())
+            var binaryFormatter = new BinaryFormatter();
+            using (var memoryStream = new MemoryStream())
             {
-                bf.Serialize(ms, obj);
-                return ms.ToArray();
+                binaryFormatter.Serialize(memoryStream, obj);
+                return memoryStream.ToArray();
             }
         }
 
