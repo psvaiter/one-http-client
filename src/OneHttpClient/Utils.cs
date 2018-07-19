@@ -1,11 +1,13 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using OneHttpClient.Models;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using OneHttpClient.Models;
 
 namespace OneHttpClient
 {
@@ -26,25 +28,50 @@ namespace OneHttpClient
         /// <returns></returns>
         public static HttpContent CreateHttpContent(object data, HttpRequestOptions options)
         {
+            var encoding = Encoding.UTF8;
+
             if (data == null)
             {
                 return null;
             }
 
-            if (options.MediaType == MediaTypeEnum.PlainText)
-            {
-                return new StringContent(data as string, Encoding.UTF8, "text/plain");
-            }
-
             if (options.MediaType == MediaTypeEnum.JSON)
             {
-                var serializerSettings = GetJsonSerializerSettings(options.NamingStrategy, options.NullValueHandling);
-                string serializedData = JsonConvert.SerializeObject(data, serializerSettings);
-
-                return new StringContent(serializedData, Encoding.UTF8, "application/json");
+                string serializedData = SerializeToJson(data, options);
+                return new StringContent(serializedData, encoding, "application/json");
             }
 
-            return new ByteArrayContent(CovnertToByteArray(data));
+            if (options.MediaType == MediaTypeEnum.XML)
+            {
+                string serializedData = SerializeToXml(data, encoding);
+                return new StringContent(serializedData, encoding, "application/xml");
+            }
+
+            if (options.MediaType == MediaTypeEnum.PlainText)
+            {
+                return new StringContent(data as string, encoding, "text/plain");
+            }
+
+            if (options.MediaType == MediaTypeEnum.OtherText)
+            {
+                return new ByteArrayContent(encoding.GetBytes(data as string));
+            }
+
+            // RawBytes
+            return new ByteArrayContent(ConvertToByteArray(data));
+        }
+
+        /// <summary>
+        /// Serializes data to JSON.
+        /// </summary>
+        /// <param name="data">Object to be serialized.</param>
+        /// <param name="options">Serialization options for request.</param>
+        /// <returns>A string formatted as JSON.</returns>
+        private static string SerializeToJson(object data, HttpRequestOptions options)
+        {
+            var serializerSettings = GetJsonSerializerSettings(options.NamingStrategy, options.NullValueHandling);
+            string serializedData = JsonConvert.SerializeObject(data, serializerSettings);
+            return serializedData;
         }
 
         /// <summary>
@@ -52,13 +79,13 @@ namespace OneHttpClient
         /// </summary>
         /// <param name="obj">The object to be converted.</param>
         /// <returns>The byte array.</returns>
-        public static byte[] CovnertToByteArray(object obj)
+        public static byte[] ConvertToByteArray(object obj)
         {
-            var bf = new BinaryFormatter();
-            using (var ms = new MemoryStream())
+            var binaryFormatter = new BinaryFormatter();
+            using (var memoryStream = new MemoryStream())
             {
-                bf.Serialize(ms, obj);
-                return ms.ToArray();
+                binaryFormatter.Serialize(memoryStream, obj);
+                return memoryStream.ToArray();
             }
         }
 
@@ -92,6 +119,11 @@ namespace OneHttpClient
                 if (contentType?.Contains("application/json") == true)
                 {
                     return TryDeserializeJson<TResponse>(responseBody, GetJsonSerializerSettings(namingStrategy, nullValueHandling));
+                }
+
+                if (contentType?.Contains("application/xml") == true)
+                {
+                    return TryDeserializeXml<TResponse>(responseBody, Encoding.UTF8);
                 }
             }
 
@@ -159,6 +191,66 @@ namespace OneHttpClient
                 ProcessDictionaryKeys = true,
                 OverrideSpecifiedNames = true
             };
+        }
+
+        /// <summary>
+        /// Serializes an object to a XML string (with UTF-8 encoding).
+        /// </summary>
+        /// <param name="data">Object to serialize.</param>
+        /// <param name="encoding">The encoding of result XML string.</param>
+        /// <returns>Valid XML string.</returns>
+        private static string SerializeToXml(object data, Encoding encoding)
+        {
+            var xmlSerializer = new XmlSerializer(data.GetType());
+            var xmlSettings = new XmlWriterSettings()
+            {
+                Encoding = encoding,
+                Indent = false
+            };
+
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var textWriter = new StreamWriter(memoryStream, encoding))
+                {
+                    using (var xmlWriter = XmlWriter.Create(textWriter, xmlSettings))
+                    {
+                        xmlSerializer.Serialize(xmlWriter, data);
+                    }
+                }
+
+                return encoding.GetString(memoryStream.ToArray());
+            }
+
+            // Note: Microsoft recommends using XmlWriter instead of XmlTextWriter.
+            // That's why it's being used here.
+            // XmlTextWriter would turn StreamWriter + XmlWriter into a single step.
+        }
+
+        /// <summary>
+        /// Deserializes XML to object of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of target object.</typeparam>
+        /// <param name="xml">XML string to be deserialized.</param>
+        /// <param name="encoding">The encoding of text in <paramref name="xml"/> parameter.</param>
+        /// <returns>The deserialized object when successful. The default value of type otherwise.</returns>
+        private static T TryDeserializeXml<T>(string xml, Encoding encoding)
+        {
+            try
+            {
+                var xmlSerializer = new XmlSerializer(typeof(T));
+
+                using (var memoryStream = new MemoryStream(encoding.GetBytes(xml)))
+                {
+                    using (var textReader = new StreamReader(memoryStream, encoding))
+                    {
+                        return (T) xmlSerializer.Deserialize(textReader);
+                    }
+                }
+            }
+            catch
+            {
+                return default(T);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Threading.Tasks;
 using OneHttpClient.Models;
 using OneHttpClient.UnitTests.Fixtures;
@@ -96,6 +97,29 @@ namespace OneHttpClient.UnitTests
             Equal(HttpServerFixture.SampleObject.ServerMessage, response.ResponseData.ServerMessage);
         }
 
+        [Fact(DisplayName = "GET XML should have deserialized response successfully when requested.")]
+        [Trait("Category", "GET")]
+        public void Send_GET_xml_deserialized_should_return_200()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = "application/xml";
+            var expectedResponseBody = HttpServerFixture.SampleTextXml;
+            var options = new HttpRequestOptions { MediaType = MediaTypeEnum.XML };
+
+            var response = _httpService.Send<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/xml", options: options).Result;
+
+            //Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equals(expectedStatusCode, (int) response.StatusCode);
+            Equals(expectedResponseBody, response.ResponseBody);
+            Contains(expectedContentType, response.Headers.Get("Content-Type"));
+
+            NotNull(response.ResponseData);
+            Equal(HttpServerFixture.SampleObject.Success, response.ResponseData.Success);
+            Equal(HttpServerFixture.SampleObject.ServerMessage, response.ResponseData.ServerMessage);
+        }
+
         [Fact(DisplayName = "GET should return the response without data deserialized when JSON is invalid.")]
         [Trait("Category", "GET")]
         public void Send_GET_invalid_json_deserialized_should_return_200_without_data_deserialized()
@@ -142,15 +166,58 @@ namespace OneHttpClient.UnitTests
             Null(response.ResponseData);
         }
 
-        [Fact(DisplayName = "POST should work. Return the same data sent with status code 200 when /echo is requested.")]
+        [Fact(DisplayName = "POST should work with media type OtherText. Return the same data sent with status code 200 when /echo is requested.")]
         [Trait("Category", "POST")]
-        public void Send_POST_data_should_return_200_with_data_sent()
+        public void Send_POST_other_text_data_should_return_200_with_data_sent()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = "mycontent";
+            var expectedResponseBody = HttpServerFixture.SampleText;
+
+            var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.OtherText };
+            var headers = new NameValueCollection
+            {
+                { "Content-Type", expectedContentType }
+            };
+
+            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleText, headers, options).Result;
+
+            //Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equal(expectedStatusCode, (int) response.StatusCode);
+            Equal(expectedResponseBody, response.ResponseBody);
+            Equal(expectedContentType, response.Headers.Get("Content-Type"));
+        }
+
+        [Fact(DisplayName = "POST should work with media type JSON. Return the same data sent with status code 200 when /echo is requested.")]
+        [Trait("Category", "POST")]
+        public void Send_POST_json_data_should_return_200_with_data_sent()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
             var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
+
+            //Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equal(expectedStatusCode, (int) response.StatusCode);
+            Equal(expectedResponseBody, response.ResponseBody);
+            Equal(expectedContentType, response.Headers.Get("Content-Type"));
+        }
+
+        [Fact(DisplayName = "POST should work with media type XML. Return the same data sent with status code 200 when /echo is requested.")]
+        [Trait("Category", "POST")]
+        public void Send_POST_xml_data_should_return_200_with_data_sent()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = "application/xml; charset=utf-8";
+            var expectedResponseBody = HttpServerFixture.SampleTextXml;
+            var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.XML };
+
+            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject, options: options).Result;
 
             //Assert
             NotNull(response);
@@ -165,7 +232,7 @@ namespace OneHttpClient.UnitTests
         public void Send_POST_wihtout_json_data_should_return_200_without_content()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = (string) null;
             var expectedResponseBody = string.Empty;
 
             var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null).Result;
@@ -183,7 +250,7 @@ namespace OneHttpClient.UnitTests
         public void Send_POST_wihtout_string_data_should_return_200_without_content()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = (string) null;
             var expectedResponseBody = string.Empty;
             var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.PlainText };
 
@@ -202,7 +269,7 @@ namespace OneHttpClient.UnitTests
         public void Send_PUT_data_should_return_200_with_data_sent()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
             var response = _httpService.Send(HttpMethodEnum.PUT, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
@@ -220,7 +287,7 @@ namespace OneHttpClient.UnitTests
         public void Send_PATCH_data_should_return_200_with_data_sent()
         {
             var expectedStatusCode = 200;
-            var expectedContentType = "application/json";
+            var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
             var response = _httpService.Send(HttpMethodEnum.PATCH, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
@@ -270,7 +337,7 @@ namespace OneHttpClient.UnitTests
             Equal(HttpServerFixture.SampleText, response.ResponseData.ServerMessage);
         }
 
-        [Fact( DisplayName = "HttpService should throw on timeout.")]
+        [Fact(DisplayName = "HttpService should throw on timeout.")]
         [Trait("Category", "GET")]
         public void Send_should_throw_on_timeout()
         {
