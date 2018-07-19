@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using OneHttpClient.Models;
+﻿using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net.Http;
@@ -8,6 +6,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using OneHttpClient.Models;
 
 namespace OneHttpClient
 {
@@ -35,7 +36,12 @@ namespace OneHttpClient
 
             if (options.MediaType == MediaTypeEnum.RawString)
             {
-                return new StringContent(data as string);
+                if (data is string)
+                {
+                    return new StringContent(data as string);
+                }
+                
+                throw new ArgumentException($"The argument '{nameof(data)}' was expected to be a string but is of another type.");
             }
 
             if (options.MediaType == MediaTypeEnum.JSON)
@@ -225,10 +231,7 @@ namespace OneHttpClient
                 {
                     using (var textReader = new StreamReader(memoryStream, encoding))
                     {
-                        using (var xmlReader = XmlReader.Create(textReader))
-                        {
-                            return (T) xmlSerializer.Deserialize(xmlReader);
-                        }
+                        return (T) xmlSerializer.Deserialize(textReader);
                     }
                 }
             }
