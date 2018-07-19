@@ -190,7 +190,7 @@ namespace OneHttpClient
             var xmlSerializer = new XmlSerializer(data.GetType());
             var xmlSettings = new XmlWriterSettings()
             {
-                Encoding = encoding, // it's here to decorate because nothing changes if removed
+                Encoding = encoding,
                 Indent = false
             };
 
