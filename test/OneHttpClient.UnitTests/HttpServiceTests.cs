@@ -30,7 +30,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "text/plain";
             var expectedResponseBody = HttpServerFixture.SampleText;
 
-            var response = _httpService.Send(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/text").Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/text").Result;
 
             //Assert
             NotNull(response);
@@ -48,7 +48,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "application/json";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
-            var response = _httpService.Send(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/json").Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/json").Result;
 
             //Assert
             NotNull(response);
@@ -65,7 +65,7 @@ namespace OneHttpClient.UnitTests
             var expectedStatusCode = 500;
             var expectedResponseBody = string.Empty;
 
-            var response = _httpService.Send(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/internal-server-error").Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/internal-server-error").Result;
 
             //Assert
             NotNull(response);
@@ -83,7 +83,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "application/json";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
-            var response = _httpService.Send<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/json").Result;
+            var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/json").Result;
 
             //Assert
             NotNull(response);
@@ -106,7 +106,7 @@ namespace OneHttpClient.UnitTests
             var expectedResponseBody = HttpServerFixture.SampleTextXml;
             var options = new HttpRequestOptions { MediaType = MediaTypeEnum.XML };
 
-            var response = _httpService.Send<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/xml", options: options).Result;
+            var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/xml", options: options).Result;
 
             //Assert
             NotNull(response);
@@ -131,7 +131,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "application/json"; // Serialization will be attemped due to content type being json but will fail
             var expectedResponseBody = HttpServerFixture.SampleText;
 
-            var response = _httpService.Send<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/invalid-json").Result;
+            var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/invalid-json").Result;
 
             //Assert
             NotNull(response);
@@ -154,7 +154,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "text/plain"; // Deserialization will not even be attemped due to content type being plain text.
             var expectedResponseBody = HttpServerFixture.SampleText;
 
-            var response = _httpService.Send<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/text").Result;
+            var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/text").Result;
 
             //Assert
             NotNull(response);
@@ -180,7 +180,7 @@ namespace OneHttpClient.UnitTests
                 { "Content-Type", expectedContentType }
             };
 
-            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleText, headers, options).Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleText, headers, options).Result;
 
             //Assert
             NotNull(response);
@@ -198,7 +198,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
-            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
 
             //Assert
             NotNull(response);
@@ -217,7 +217,7 @@ namespace OneHttpClient.UnitTests
             var expectedResponseBody = HttpServerFixture.SampleTextXml;
             var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.XML };
 
-            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject, options: options).Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject, options: options).Result;
 
             //Assert
             NotNull(response);
@@ -235,7 +235,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = (string) null;
             var expectedResponseBody = string.Empty;
 
-            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null).Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null).Result;
 
             //Assert
             NotNull(response);
@@ -254,7 +254,7 @@ namespace OneHttpClient.UnitTests
             var expectedResponseBody = string.Empty;
             var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.PlainText };
 
-            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null, options: options).Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null, options: options).Result;
 
             //Assert
             NotNull(response);
@@ -272,7 +272,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
-            var response = _httpService.Send(HttpMethodEnum.PUT, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.PUT, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
 
             //Assert
             NotNull(response);
@@ -290,7 +290,7 @@ namespace OneHttpClient.UnitTests
             var expectedContentType = "application/json; charset=utf-8";
             var expectedResponseBody = HttpServerFixture.SampleTextJson;
 
-            var response = _httpService.Send(HttpMethodEnum.PATCH, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.PATCH, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
 
             //Assert
             NotNull(response);
@@ -307,7 +307,7 @@ namespace OneHttpClient.UnitTests
             var expectedStatusCode = 200;
             var expectedResponseBody = string.Empty;
 
-            var response = _httpService.Send(HttpMethodEnum.DELETE, $"{_serverFixture.BaseAddress}/empty").Result;
+            var response = _httpService.SendAsync(HttpMethodEnum.DELETE, $"{_serverFixture.BaseAddress}/empty").Result;
 
             //Assert
             NotNull(response);
@@ -324,7 +324,7 @@ namespace OneHttpClient.UnitTests
             var expectedResponseBody = HttpServerFixture.SampleTextJsonSnakeCase;
             var expectedResponseBodyObject = HttpServerFixture.SampleObject;
 
-            var response = _httpService.Send<OperationResponseFixture>(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject, options: new HttpRequestOptions() { NamingStrategy = NamingStrategyEnum.SnakeCase }).Result;
+            var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject, options: new HttpRequestOptions() { NamingStrategy = NamingStrategyEnum.SnakeCase }).Result;
 
             //Assert
             NotNull(response);
@@ -345,7 +345,7 @@ namespace OneHttpClient.UnitTests
 
             var exception = Record.Exception(() =>
             {
-                return _httpService.Send(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/timeout", options: options).Result;
+                return _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/timeout", options: options).Result;
             });
 
             //Assert

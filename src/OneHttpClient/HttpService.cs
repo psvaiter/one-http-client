@@ -82,14 +82,14 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">Advanced request options. See <see cref="HttpRequestOptions"/> for more details.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        public async Task<Response<TResponse>> Send<TResponse>(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public async Task<Response<TResponse>> SendAsync<TResponse>(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
             if (options == null)
             {
                 options = new HttpRequestOptions();
             }
 
-            var response = await Send(method, url, data, headers, options);
+            var response = await SendAsync(method, url, data, headers, options);
             var deserializedResponseBody = Utils.TryDeserializeResponseBody<TResponse>(response.Headers, response.ResponseBody, options.NamingStrategy, options.NullValueHandling);
 
             return new Response<TResponse>(response, deserializedResponseBody);
@@ -108,7 +108,7 @@ namespace OneHttpClient
         /// <param name="headers">Headers of request message.</param>
         /// <param name="options">Advanced request options. See <see cref="HttpRequestOptions"/> for more details.</param>
         /// <returns><see cref="Response{TResponse}"/> with data from HTTP response.</returns>
-        public async Task<Response> Send(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public async Task<Response> SendAsync(HttpMethodEnum method, string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
             SetActiveConnectionTimeout(url);
             // This will allow a DNS lookup periodically since HttpClient is static.
@@ -120,7 +120,7 @@ namespace OneHttpClient
 
             using (var requestMessage = BuildRequestMessage(method, url, data, headers, options))
             {
-                return await SendRequest(requestMessage, options.TimeoutInSeconds);
+                return await SendRequestAsync(requestMessage, options.TimeoutInSeconds);
             }
         }
 
@@ -196,7 +196,7 @@ namespace OneHttpClient
         /// Currently it's not possible to cancel a request by any means other than timeout.
         /// </para>
         /// </remarks>
-        private async Task<Response> SendRequest(HttpRequestMessage requestMessage, int requestTimeout = 0)
+        private async Task<Response> SendRequestAsync(HttpRequestMessage requestMessage, int requestTimeout = 0)
         {
             using (var cts = GetCancellationTokenSource(TimeSpan.FromSeconds(requestTimeout)))
             {
@@ -258,63 +258,63 @@ namespace OneHttpClient
         }
 
         // GET
-        public Task<Response> Get(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response> GetAsync(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(HttpMethodEnum.GET, url, null, headers, options);
+            return SendAsync(HttpMethodEnum.GET, url, null, headers, options);
         }
 
         // GET (typed response)
-        public Task<Response<TResponse>> Get<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response<TResponse>> GetAsync<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(HttpMethodEnum.GET, url, null, headers, options);
+            return SendAsync<TResponse>(HttpMethodEnum.GET, url, null, headers, options);
         }
 
         // POST
-        public Task<Response> Post(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response> PostAsync(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(HttpMethodEnum.POST, url, data, headers, options);
+            return SendAsync(HttpMethodEnum.POST, url, data, headers, options);
         }
 
         // POST (typed response)
-        public Task<Response<TResponse>> Post<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response<TResponse>> PostAsync<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(HttpMethodEnum.POST, url, data, headers, options);
+            return SendAsync<TResponse>(HttpMethodEnum.POST, url, data, headers, options);
         }
 
         // PUT
-        public Task<Response> Put(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response> PutAsync(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(HttpMethodEnum.PUT, url, data, headers, options);
+            return SendAsync(HttpMethodEnum.PUT, url, data, headers, options);
         }
 
         // PUT (typed response)
-        public Task<Response<TResponse>> Put<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response<TResponse>> PutAsync<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(HttpMethodEnum.PUT, url, data, headers, options);
+            return SendAsync<TResponse>(HttpMethodEnum.PUT, url, data, headers, options);
         }
 
         // PATCH
-        public Task<Response> Patch(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response> PatchAsync(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(HttpMethodEnum.PATCH, url, data, headers, options);
+            return SendAsync(HttpMethodEnum.PATCH, url, data, headers, options);
         }
 
         // PATCH (typed response)
-        public Task<Response<TResponse>> Patch<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response<TResponse>> PatchAsync<TResponse>(string url, object data = null, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(HttpMethodEnum.PATCH, url, data, headers, options);
+            return SendAsync<TResponse>(HttpMethodEnum.PATCH, url, data, headers, options);
         }
 
         // DELETE
-        public Task<Response> Delete(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response> DeleteAsync(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send(HttpMethodEnum.DELETE, url, null, headers, options);
+            return SendAsync(HttpMethodEnum.DELETE, url, null, headers, options);
         }
 
         // DELETE (typed response)
-        public Task<Response<TResponse>> Delete<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
+        public Task<Response<TResponse>> DeleteAsync<TResponse>(string url, NameValueCollection headers = null, HttpRequestOptions options = null)
         {
-            return Send<TResponse>(HttpMethodEnum.DELETE, url, null, headers, options);
+            return SendAsync<TResponse>(HttpMethodEnum.DELETE, url, null, headers, options);
         }
     }
 }
