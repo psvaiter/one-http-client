@@ -163,8 +163,13 @@ namespace OneHttpClient
             {
                 foreach (string key in headers.Keys)
                 {
-                    message.Headers.TryAddWithoutValidation(key, headers[key]);
-                    message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
+                    // Try add to request message headers
+                    var added = message.Headers.TryAddWithoutValidation(key, headers[key]);
+                    if (added == false)
+                    {
+                        // Try add to content headers
+                        message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
+                    }
                 }
             }
         }
