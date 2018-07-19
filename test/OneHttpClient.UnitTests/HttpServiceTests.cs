@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Threading.Tasks;
 using OneHttpClient.Models;
 using OneHttpClient.UnitTests.Fixtures;
@@ -163,6 +164,30 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
 
             Null(response.ResponseData);
+        }
+
+        [Fact(DisplayName = "POST should work with media type OtherText. Return the same data sent with status code 200 when /echo is requested.")]
+        [Trait("Category", "POST")]
+        public void Send_POST_other_text_data_should_return_200_with_data_sent()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = "mycontent";
+            var expectedResponseBody = HttpServerFixture.SampleText;
+
+            var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.OtherText };
+            var headers = new NameValueCollection
+            {
+                { "Content-Type", expectedContentType }
+            };
+
+            var response = _httpService.Send(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleText, headers, options).Result;
+
+            //Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equal(expectedStatusCode, (int) response.StatusCode);
+            Equal(expectedResponseBody, response.ResponseBody);
+            Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
         [Fact(DisplayName = "POST should work with media type JSON. Return the same data sent with status code 200 when /echo is requested.")]
