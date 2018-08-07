@@ -131,10 +131,10 @@ namespace OneHttpClient
         /// <param name="url">URL that defines an endpoint.</param>
         private void SetActiveConnectionTimeout(string url)
         {
-            // Note this cannot be set globally, only per service point.
-            // However the timeout value used is the same for all service points.
-            var servicePoint = ServicePointManager.FindServicePoint(url, null);
-            servicePoint.ConnectionLeaseTimeout = (int) _connectionLeaseTimeout.TotalMilliseconds;
+                // Note this cannot be set globally, only per service point.
+                // However the timeout value used is the same for all service points.
+                var servicePoint = ServicePointManager.FindServicePoint(url, null);
+                servicePoint.ConnectionLeaseTimeout = (int) _connectionLeaseTimeout.TotalMilliseconds;
         }
 
         /// <summary>
