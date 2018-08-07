@@ -65,7 +65,11 @@ namespace OneHttpClient
 
             _logger = logger;
 
-            ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
+            // Increase DefaultConnectionLimit if too low, else keep it high.
+            if (ServicePointManager.DefaultConnectionLimit < Constants.DefaultConnectionLimit)
+            {
+                ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
+            }
         }
 
         /// <summary>
