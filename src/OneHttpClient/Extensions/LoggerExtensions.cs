@@ -30,10 +30,12 @@ namespace OneHttpClient.Extensions
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="guideNumber">
-        /// A random number that is unique in a short period of time that correlates the request to a response.
+        /// A random number that is unique in a short period of time and that correlates the request to a response.
+        /// It will be put in log message and will be available for semantic logging.
         /// </param>
         /// <param name="httpRequestMessage">
         /// The request message containing fields to be put in log message.
+        /// Currently these fields contain HTTP method and URI, but more may be added later.
         /// These fields will be put in log message and will be available for semantic logging.
         /// </param>
         public static void RequestStarting(this ILogger logger, string guideNumber, HttpRequestMessage httpRequestMessage)
@@ -49,7 +51,8 @@ namespace OneHttpClient.Extensions
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="guideNumber">
-        /// A random number that is unique in a short period of time that correlates the response to a request.
+        /// A random number that is unique in a short period of time and that correlates the response to a request.
+        /// It will be put in log message and will be available for semantic logging.
         /// </param>
         /// <param name="elapsedTime">
         /// The time taken to complete the request.
