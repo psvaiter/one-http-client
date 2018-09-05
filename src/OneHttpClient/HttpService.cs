@@ -176,6 +176,12 @@ namespace OneHttpClient
                     var added = message.Headers.TryAddWithoutValidation(key, headers[key]);
                     if (added == false)
                     {
+                        // Skip Content-Type when it's already set by this client
+                        if (message.Content.Headers.ContentType != null)
+                        {
+                            continue;
+                        }
+
                         // Try add to content headers
                         message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
                     }

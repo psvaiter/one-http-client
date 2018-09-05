@@ -32,7 +32,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/text").Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -50,7 +50,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/json").Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -67,7 +67,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/internal-server-error").Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             False(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -85,7 +85,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/json").Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equals(expectedStatusCode, (int) response.StatusCode);
@@ -108,7 +108,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/xml", options: options).Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equals(expectedStatusCode, (int) response.StatusCode);
@@ -133,7 +133,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/invalid-json").Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -156,7 +156,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/text").Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -182,7 +182,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleText, headers, options).Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -200,7 +200,31 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
 
-            //Assert
+            // Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equal(expectedStatusCode, (int) response.StatusCode);
+            Equal(expectedResponseBody, response.ResponseBody);
+            Equal(expectedContentType, response.Headers.Get("Content-Type"));
+        }
+
+        [Fact(DisplayName = "POST should ignore explicit Content-Type header when automatically set by media type.")]
+        [Trait("Category", "POST")]
+        public void Send_POST_json_data_with_explicit_content_type_should_return_200_with_data_sent()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = "application/json; charset=utf-8";
+            var expectedResponseBody = HttpServerFixture.SampleTextJson;
+
+            var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.JSON };
+            var explicitHeaders = new NameValueCollection
+            {
+                { "Content-Type", "application/json" }
+            };
+
+            var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject, explicitHeaders).Result;
+
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -219,7 +243,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject, options: options).Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -237,7 +261,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null).Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -256,7 +280,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null, options: options).Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -274,7 +298,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.PUT, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -292,7 +316,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.PATCH, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject).Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -309,7 +333,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync(HttpMethodEnum.DELETE, $"{_serverFixture.BaseAddress}/empty").Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -326,7 +350,7 @@ namespace OneHttpClient.UnitTests
 
             var response = _httpService.SendAsync<OperationResponseFixture>(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", HttpServerFixture.SampleObject, options: new HttpRequestOptions() { NamingStrategy = NamingStrategyEnum.SnakeCase }).Result;
 
-            //Assert
+            // Assert
             NotNull(response);
             True(response.IsSuccessStatusCode);
             Equal(expectedStatusCode, (int) response.StatusCode);
@@ -348,7 +372,7 @@ namespace OneHttpClient.UnitTests
                 return _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/timeout", options: options).Result;
             });
 
-            //Assert
+            // Assert
             True(options.TimeoutInSeconds < HttpServerFixture.SampleDelayInSeconds);
             NotNull(exception);
             IsType<AggregateException>(exception);
