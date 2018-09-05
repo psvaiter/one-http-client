@@ -33,7 +33,7 @@
         /// <summary>
         /// Unformatted text. User must define Content-Type.
         /// </summary>
-        OtherText,
+        UnknownText,
 
         //MessagePack
     }

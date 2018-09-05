@@ -166,15 +166,15 @@ namespace OneHttpClient.UnitTests
             Null(response.ResponseData);
         }
 
-        [Fact(DisplayName = "POST should work with media type OtherText. Return the same data sent with status code 200 when /echo is requested.")]
+        [Fact(DisplayName = "POST should work with media type Unknown. Return the same data sent with status code 200 when /echo is requested.")]
         [Trait("Category", "POST")]
-        public void Send_POST_other_text_data_should_return_200_with_data_sent()
+        public void Send_POST_unknown_text_data_should_return_200_with_data_sent()
         {
             var expectedStatusCode = 200;
             var expectedContentType = "mycontent";
             var expectedResponseBody = HttpServerFixture.SampleText;
 
-            var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.OtherText };
+            var options = new HttpRequestOptions() { MediaType = MediaTypeEnum.UnknownText };
             var headers = new NameValueCollection
             {
                 { "Content-Type", expectedContentType }

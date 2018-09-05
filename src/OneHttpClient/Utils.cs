@@ -52,7 +52,7 @@ namespace OneHttpClient
                 return new StringContent(data as string, encoding, "text/plain");
             }
 
-            if (options.MediaType == MediaTypeEnum.OtherText)
+            if (options.MediaType == MediaTypeEnum.UnknownText)
             {
                 return new ByteArrayContent(encoding.GetBytes(data as string));
             }
