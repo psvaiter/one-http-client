@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OneHttpClient;
+using OneHttpClient.Extensions;
 
 namespace TestConsoleApp
 {
@@ -17,7 +19,8 @@ namespace TestConsoleApp
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IHttpService, HttpService>();
+            //services.AddSingleton<IHttpService, HttpService>(svcProvider => new HttpService(connectionLeaseTimeout: TimeSpan.FromSeconds(30)));
+            services.AddOneHttpClient(null, connectionLeaseTimeout: TimeSpan.FromSeconds(30));
             services.AddMvc();
         }
 

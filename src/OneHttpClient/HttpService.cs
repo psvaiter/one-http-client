@@ -65,7 +65,11 @@ namespace OneHttpClient
 
             _logger = logger;
 
-            ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
+            // Increase DefaultConnectionLimit if too low, else keep it high.
+            if (ServicePointManager.DefaultConnectionLimit < Constants.DefaultConnectionLimit)
+            {
+                ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
+            }
         }
 
         /// <summary>
@@ -172,6 +176,12 @@ namespace OneHttpClient
                     var added = message.Headers.TryAddWithoutValidation(key, headers[key]);
                     if (added == false)
                     {
+                        // Skip Content-Type when it's already set by this client
+                        if (message.Content.Headers.ContentType != null)
+                        {
+                            continue;
+                        }
+
                         // Try add to content headers
                         message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
                     }

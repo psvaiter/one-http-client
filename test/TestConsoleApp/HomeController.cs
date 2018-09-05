@@ -46,8 +46,10 @@ namespace TestConsoleApp
         [HttpGet("/times")]
         public async Task<IActionResult> TestTimes(int iterationCount = 10)
         {
+            string url = "http://jsonplaceholder.typicode.com/posts/1";
+
             // Warmup
-            await _http.GetAsync("https://jsonplaceholder.typicode.com/posts");
+            var warmupResponse = await _http.GetAsync(url);
 
             // Max out the iteration count
             if (iterationCount > 50)
@@ -60,7 +62,7 @@ namespace TestConsoleApp
             for (int i = 0; i < iterationCount; i++)
             {
                 var stopwatch = Stopwatch.StartNew();
-                var response = await _http.GetAsync("https://jsonplaceholder.typicode.com/posts");
+                var response = await _http.GetAsync(url);
                 stopwatch.Stop();
 
                 elapsedTimes.Add(response.ElapsedTime.TotalMilliseconds, stopwatch.Elapsed.TotalMilliseconds);
@@ -75,8 +77,9 @@ namespace TestConsoleApp
 
             return Ok(new
             {
+                warmup = warmupResponse.ElapsedTime.TotalMilliseconds,
                 elapsedTimes = elapsedTimes,
-                averageOverhead = overheads.Average()
+                averageOverhead = (overheads.Any()) ? overheads.Average() : 0
             });
         }
     }

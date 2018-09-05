@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Patrick Svaiter</Authors>
-    <Version>1.0.0-beta-04</Version>
+    <Version>1.0.0-rc1</Version>
     <RepositoryUrl>https://github.com/psvaiter/one-http-client/</RepositoryUrl>
     <PackageProjectUrl>https://github.com/psvaiter/one-http-client/</PackageProjectUrl>
     <PackageTags>httpclient http client</PackageTags>
@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

@@ -52,13 +52,13 @@ namespace OneHttpClient
                 return new StringContent(data as string, encoding, "text/plain");
             }
 
-            if (options.MediaType == MediaTypeEnum.OtherText)
+            if (options.MediaType == MediaTypeEnum.UnknownText)
             {
                 return new ByteArrayContent(encoding.GetBytes(data as string));
             }
 
             // RawBytes
-            return new ByteArrayContent(ConvertToByteArray(data));
+            return new ByteArrayContent((byte[]) data);
         }
 
         /// <summary>
@@ -75,27 +75,8 @@ namespace OneHttpClient
         }
 
         /// <summary>
-        /// Converts an object to byte array.
+        /// Tries to deserializes a response body based on response <c>Content-Type</c> header.
         /// </summary>
-        /// <param name="obj">The object to be converted.</param>
-        /// <returns>The byte array.</returns>
-        public static byte[] ConvertToByteArray(object obj)
-        {
-            var binaryFormatter = new BinaryFormatter();
-            using (var memoryStream = new MemoryStream())
-            {
-                binaryFormatter.Serialize(memoryStream, obj);
-                return memoryStream.ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Tries to deserializes a response body based on response content type.
-        /// </summary>
-        /// <remarks>
-        /// Currently supports only JSON. If content type is not supported or if deserialization 
-        /// fails the default value of type is returned.
-        /// </remarks>
         /// <typeparam name="TResponse">Type to deserialize the response body.</typeparam>
         /// <param name="headers">Headers with information </param>
         /// <param name="responseBody">The string of response body to be deserialized.</param>
@@ -104,13 +85,15 @@ namespace OneHttpClient
         /// </param>
         /// <param name="nullValueHandling">Tells whether to include or ignore null values when (de)serializing.</param>
         /// <returns>The deserialized object or default value of type.</returns>
-        public static TResponse TryDeserializeResponseBody<TResponse>
-            (
-                NameValueCollection headers,
-                string responseBody,
-                NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase,
-                NullValueHandling nullValueHandling = NullValueHandling.Include
-            )
+        /// <remarks>
+        /// Currently supports JSON and XML. If Content-Type is not supported or if deserialization 
+        /// fails the default value of type is returned.
+        /// </remarks>
+        public static TResponse TryDeserializeResponseBody<TResponse>(
+            NameValueCollection headers, 
+            string responseBody, 
+            NamingStrategyEnum namingStrategy = NamingStrategyEnum.CamelCase, 
+            NullValueHandling nullValueHandling = NullValueHandling.Include)
         {
             if (headers != null && string.IsNullOrEmpty(responseBody) == false)
             {
@@ -194,11 +177,11 @@ namespace OneHttpClient
         }
 
         /// <summary>
-        /// Serializes an object to a XML string (with UTF-8 encoding).
+        /// Serializes an object to a XML string.
         /// </summary>
         /// <param name="data">Object to serialize.</param>
         /// <param name="encoding">The encoding of result XML string.</param>
-        /// <returns>Valid XML string.</returns>
+        /// <returns>A valid XML string.</returns>
         private static string SerializeToXml(object data, Encoding encoding)
         {
             var xmlSerializer = new XmlSerializer(data.GetType());
@@ -221,8 +204,7 @@ namespace OneHttpClient
                 return encoding.GetString(memoryStream.ToArray());
             }
 
-            // Note: Microsoft recommends using XmlWriter instead of XmlTextWriter.
-            // That's why it's being used here.
+            // Note: Microsoft recommends using XmlWriter instead of XmlTextWriter. That's why it's being used here.
             // XmlTextWriter would turn StreamWriter + XmlWriter into a single step.
         }
 

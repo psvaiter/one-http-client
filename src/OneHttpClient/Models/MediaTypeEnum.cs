@@ -6,7 +6,8 @@
     public enum MediaTypeEnum
     {
         /// <summary>
-        /// Raw bytes. User must define Content-Type.
+        /// Content is expected to be an array of bytes and will be sent as is.
+        /// User must define the Content-Type.
         /// </summary>
         RawBytes = 0,
 
@@ -32,7 +33,7 @@
         /// <summary>
         /// Unformatted text. User must define Content-Type.
         /// </summary>
-        OtherText,
+        UnknownText,
 
         //MessagePack
     }
