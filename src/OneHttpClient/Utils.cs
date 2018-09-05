@@ -58,7 +58,7 @@ namespace OneHttpClient
             }
 
             // RawBytes
-            return new ByteArrayContent(ConvertToByteArray(data));
+            return new ByteArrayContent((byte[]) data);
         }
 
         /// <summary>
@@ -72,21 +72,6 @@ namespace OneHttpClient
             var serializerSettings = GetJsonSerializerSettings(options.NamingStrategy, options.NullValueHandling);
             string serializedData = JsonConvert.SerializeObject(data, serializerSettings);
             return serializedData;
-        }
-
-        /// <summary>
-        /// Converts an object to byte array.
-        /// </summary>
-        /// <param name="obj">The object to be converted.</param>
-        /// <returns>The byte array.</returns>
-        public static byte[] ConvertToByteArray(object obj)
-        {
-            var binaryFormatter = new BinaryFormatter();
-            using (var memoryStream = new MemoryStream())
-            {
-                binaryFormatter.Serialize(memoryStream, obj);
-                return memoryStream.ToArray();
-            }
         }
 
         /// <summary>
