@@ -17,6 +17,11 @@ namespace OneHttpClient
     public class HttpService : IHttpService
     {
         /// <summary>
+        /// Indicates if the ctor has been called. Prevents side-effects from multiple calls to ctor.
+        /// </summary>
+        private static bool _initialized = false;
+        
+        /// <summary>
         /// Static instance of HttpClient used to make all HTTP requests.
         /// </summary>
         private static HttpClient _httpClient = new HttpClient();
@@ -52,23 +57,30 @@ namespace OneHttpClient
         /// this can lead to problems detecting DNS changes. This problem is likely to occur when a connection tends 
         /// to be open all the time due to activity (like being reused before idle timeout is reached. That's because 
         /// <see cref="HttpClient"/> will not perform a DNS lookup while the connection is already established.
+        /// 
+        /// The HttpClient.Timeout value should not be changed after this initalization. That's because the client is
+        /// static and changing this value could lead to runtime errors if a request is being made simultaneously.
         /// </remarks>
         public HttpService(TimeSpan? defaultRequestTimeout = null, TimeSpan? connectionLeaseTimeout = null, ILogger<HttpService> logger = null)
         {
-            _httpClient.Timeout = (defaultRequestTimeout == null)
-                ? Constants.DefaultRequestTimeout
-                : defaultRequestTimeout.Value;
-
-            _connectionLeaseTimeout = (connectionLeaseTimeout == null)
-                ? Constants.DefaultConnectionLeaseTimeout
-                : connectionLeaseTimeout.Value;
-
-            _logger = logger;
-
-            // Increase DefaultConnectionLimit if too low, else keep it high.
-            if (ServicePointManager.DefaultConnectionLimit < Constants.DefaultConnectionLimit)
+            if (!_initialized)
             {
-                ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
+                _httpClient.Timeout = (defaultRequestTimeout == null)
+                    ? Constants.DefaultRequestTimeout
+                    : defaultRequestTimeout.Value;
+
+                _connectionLeaseTimeout = (connectionLeaseTimeout == null)
+                    ? Constants.DefaultConnectionLeaseTimeout
+                    : connectionLeaseTimeout.Value;
+
+                // Increase DefaultConnectionLimit if too low, else keep it high.
+                if (ServicePointManager.DefaultConnectionLimit < Constants.DefaultConnectionLimit)
+                {
+                    ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
+                }
+
+                _logger = logger;
+                _initialized = true;
             }
         }
 
@@ -172,18 +184,15 @@ namespace OneHttpClient
             {
                 foreach (string key in headers.Keys)
                 {
-                    // Try add to request message headers
                     var added = message.Headers.TryAddWithoutValidation(key, headers[key]);
-                    if (added == false)
+                    if (!added && message.Content != null)
                     {
-                        // Skip Content-Type when it's already set by this client
-                        if (message.Content.Headers.ContentType != null)
+                        // If could not add to request headers, then it may be a content header.
+                        // Skip when it's been already set by this client (via Content creation)
+                        if (message.Content.Headers.ContentType == null)
                         {
-                            continue;
+                            message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
                         }
-
-                        // Try add to content headers
-                        message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
                     }
                 }
             }
@@ -229,17 +238,38 @@ namespace OneHttpClient
                 catch (TaskCanceledException)
                 {
                     stopwatch.Stop();
-                    
-                    // Replace the current exception with the basic message "A task was canceled" 
-                    // by a more appropriate and more explanatory one.
 
-                    var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
-                    timeoutException.Data.Add("GuideNumber", guideNumber);
-                    timeoutException.Data.Add("ElapsedMilliseconds", stopwatch.Elapsed.TotalMilliseconds);
+                    // The task could have been canceled by either a native HttpClient timeout or a 
+                    // timeout from cancellation token if set.
 
-                    throw timeoutException;
+                    // This exception will be replaced by the one created below because:
+                    //   - HttpClient timeout is not clear enough. It just says "A task was canceled".
+                    //   - The exception should be the same regardless of the source of timeout.
+                    throw CreateTimeoutException(guideNumber, stopwatch.Elapsed);
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="TimeoutException"/> with a predefined message, a guide number and the 
+        /// elapsed time. The last two will be available as additional data.
+        /// </summary>
+        /// <param name="guideNumber">The guide number to correlate to a request.</param>
+        /// <param name="elapsedTime">The time elapsed from the start of the request until it fails.</param>
+        /// <returns>The timeout exception.</returns>
+        /// <remarks>
+        /// The intention is provide useful information for the real cause of request failure and 
+        /// also provide the same data as those in a successful response (except for the status code).
+        /// The guide number and the elapsed time are embedded in data collection under the keys 
+        /// "GuideNumber" and "ElapsedMilliseconds" respectively.
+        /// </remarks>
+        private static TimeoutException CreateTimeoutException(string guideNumber, TimeSpan elapsedTime)
+        {
+            var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {elapsedTime.TotalMilliseconds} ms.");
+            timeoutException.Data.Add("GuideNumber", guideNumber);
+            timeoutException.Data.Add("ElapsedMilliseconds", elapsedTime.TotalMilliseconds);
+
+            return timeoutException;
         }
 
         /// <summary>

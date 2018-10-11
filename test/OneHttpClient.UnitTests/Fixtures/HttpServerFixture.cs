@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using MockHttpServer;
 
@@ -10,7 +11,7 @@ namespace OneHttpClient.UnitTests.Fixtures
         public MockServer MockServer { get; private set; }
         public string BaseAddress { get; private set; }
 
-        public readonly static int SampleDelayInSeconds = 3;
+        public readonly static int SampleDelayInSeconds = 5;
         public readonly static string SampleText = "You made it!";
         public readonly static string SampleTextJson = "{\"success\":true,\"serverMessage\":\"You made it!\"}";
         public readonly static string SampleTextJsonSnakeCase = "{\"success\":true,\"server_message\":\"You made it!\"}";
@@ -29,7 +30,7 @@ namespace OneHttpClient.UnitTests.Fixtures
                 new MockHttpHandler("/echo", (req, resp, param) => resp.StatusCode(200).ContentType(req.ContentType).Content(req.Content())),
                 new MockHttpHandler("/invalid-json", (req, resp, param) => resp.StatusCode(200).ContentType("application/json").Content(SampleText)),
                 new MockHttpHandler("/internal-server-error", (req, resp, param) => resp.StatusCode(500).Content("")),
-                new MockHttpHandler("/timeout", (req, resp, param) => Thread.Sleep(SampleDelayInSeconds * 1000)),
+                new MockHttpHandler("/timeout", (req, resp, param) => HandleTimeout(req)),
             };
 
             // Create a mock http server on one un-used port.
@@ -37,6 +38,19 @@ namespace OneHttpClient.UnitTests.Fixtures
             
             // Set base address based on chosen port.
             BaseAddress = $"http://localhost:{MockServer.Port}";
+        }
+
+        private void HandleTimeout(HttpListenerRequest request)
+        {
+            int delay = SampleDelayInSeconds;
+
+            var informedDelay = request.QueryString?.Get("delay");
+            if (informedDelay != null)
+            {
+                delay = Convert.ToInt32(informedDelay);
+            }
+
+            Thread.Sleep(delay * 1000);
         }
 
         public void Dispose()
