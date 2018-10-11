@@ -17,6 +17,11 @@ namespace OneHttpClient
     public class HttpService : IHttpService
     {
         /// <summary>
+        /// Indicates if the ctor has been called. Prevents side-effects from multiple calls to ctor.
+        /// </summary>
+        private static bool _initialized = false;
+        
+        /// <summary>
         /// Static instance of HttpClient used to make all HTTP requests.
         /// </summary>
         private static HttpClient _httpClient = new HttpClient();
@@ -52,23 +57,30 @@ namespace OneHttpClient
         /// this can lead to problems detecting DNS changes. This problem is likely to occur when a connection tends 
         /// to be open all the time due to activity (like being reused before idle timeout is reached. That's because 
         /// <see cref="HttpClient"/> will not perform a DNS lookup while the connection is already established.
+        /// 
+        /// The HttpClient.Timeout value should not be changed after this initalization. That's because the client is
+        /// static and changing this value could lead to runtime errors if a request is being made simultaneously.
         /// </remarks>
         public HttpService(TimeSpan? defaultRequestTimeout = null, TimeSpan? connectionLeaseTimeout = null, ILogger<HttpService> logger = null)
         {
-            _httpClient.Timeout = (defaultRequestTimeout == null)
-                ? Constants.DefaultRequestTimeout
-                : defaultRequestTimeout.Value;
-
-            _connectionLeaseTimeout = (connectionLeaseTimeout == null)
-                ? Constants.DefaultConnectionLeaseTimeout
-                : connectionLeaseTimeout.Value;
-
-            _logger = logger;
-
-            // Increase DefaultConnectionLimit if too low, else keep it high.
-            if (ServicePointManager.DefaultConnectionLimit < Constants.DefaultConnectionLimit)
+            if (!_initialized)
             {
-                ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
+                _httpClient.Timeout = (defaultRequestTimeout == null)
+                    ? Constants.DefaultRequestTimeout
+                    : defaultRequestTimeout.Value;
+
+                _connectionLeaseTimeout = (connectionLeaseTimeout == null)
+                    ? Constants.DefaultConnectionLeaseTimeout
+                    : connectionLeaseTimeout.Value;
+
+                // Increase DefaultConnectionLimit if too low, else keep it high.
+                if (ServicePointManager.DefaultConnectionLimit < Constants.DefaultConnectionLimit)
+                {
+                    ServicePointManager.DefaultConnectionLimit = Constants.DefaultConnectionLimit;
+                }
+
+                _logger = logger;
+                _initialized = true;
             }
         }
 
