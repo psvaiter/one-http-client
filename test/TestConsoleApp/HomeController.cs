@@ -44,7 +44,7 @@ namespace TestConsoleApp
         }
 
         [HttpGet("/times")]
-        public async Task<IActionResult> TestTimes(int iterationCount = 10)
+        public async Task<IActionResult> TestSequential(int count = 10)
         {
             string url = "http://jsonplaceholder.typicode.com/posts/1";
 
@@ -52,14 +52,11 @@ namespace TestConsoleApp
             var warmupResponse = await _http.GetAsync(url);
 
             // Max out the iteration count
-            if (iterationCount > 50)
-            {
-                iterationCount = 50;
-            }
+            if (count > 50) { count = 50; }
 
             // Make calls
             var elapsedTimes = new Dictionary<double, double>();
-            for (int i = 0; i < iterationCount; i++)
+            for (int i = 0; i < count; i++)
             {
                 var stopwatch = Stopwatch.StartNew();
                 var response = await _http.GetAsync(url);
