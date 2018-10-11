@@ -245,16 +245,29 @@ namespace OneHttpClient
                     // This exception will be replaced by the one created below because:
                     //   - HttpClient timeout is not clear enough. It just says "A task was canceled".
                     //   - The exception should be the same regardless of the source of timeout.
-                    throw CreateTimeoutException(guideNumber, stopwatch);
+                    throw CreateTimeoutException(guideNumber, stopwatch.Elapsed);
                 }
             }
         }
 
-        private static TimeoutException CreateTimeoutException(string guideNumber, Stopwatch stopwatch)
+        /// <summary>
+        /// Creates a <see cref="TimeoutException"/> with a predefined message, a guide number and the 
+        /// elapsed time. The last two will be available as additional data.
+        /// </summary>
+        /// <param name="guideNumber">The guide number to correlate to a request.</param>
+        /// <param name="elapsedTime">The time elapsed from the start of the request until it fails.</param>
+        /// <returns>The timeout exception.</returns>
+        /// <remarks>
+        /// The intention is provide useful information for the real cause of request failure and 
+        /// also provide the same data as those in a successful response (except for the status code).
+        /// The guide number and the elapsed time are embedded in data collection under the keys 
+        /// "GuideNumber" and "ElapsedMilliseconds" respectively.
+        /// </remarks>
+        private static TimeoutException CreateTimeoutException(string guideNumber, TimeSpan elapsedTime)
         {
-            var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
+            var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {elapsedTime.TotalMilliseconds} ms.");
             timeoutException.Data.Add("GuideNumber", guideNumber);
-            timeoutException.Data.Add("ElapsedMilliseconds", stopwatch.Elapsed.TotalMilliseconds);
+            timeoutException.Data.Add("ElapsedMilliseconds", elapsedTime.TotalMilliseconds);
 
             return timeoutException;
         }
