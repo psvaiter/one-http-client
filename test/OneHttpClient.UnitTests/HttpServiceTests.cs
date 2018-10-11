@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Threading.Tasks;
 using OneHttpClient.Models;
 using OneHttpClient.UnitTests.Fixtures;
 using Xunit;
@@ -269,6 +268,29 @@ namespace OneHttpClient.UnitTests
             Equal(expectedContentType, response.Headers.Get("Content-Type"));
         }
 
+        [Fact(DisplayName = "POST without content and with headers should work (media type: JSON). Return status code 200 without content when /echo is requested.")]
+        [Trait("Category", "POST")]
+        public void Send_POST_wihtout_json_data_and_with_headers_should_return_200_without_content()
+        {
+            var expectedStatusCode = 200;
+            var expectedContentType = (string) null;
+            var expectedResponseBody = string.Empty;
+            var someHeaders = new NameValueCollection()
+            {
+                ["X-Any"] = "Some value", // this will not reach content headers
+                ["Content-Type"] = "application/my-type" // this content header should be ignored because there's no content
+            };
+
+            var response = _httpService.SendAsync(HttpMethodEnum.POST, $"{_serverFixture.BaseAddress}/echo", null, someHeaders).Result;
+
+            // Assert
+            NotNull(response);
+            True(response.IsSuccessStatusCode);
+            Equal(expectedStatusCode, (int) response.StatusCode);
+            Equal(expectedResponseBody, response.ResponseBody);
+            Equal(expectedContentType, response.Headers.Get("Content-Type"));
+        }
+
         [Fact(DisplayName = "POST without content should work (media type: plain text). Return status code 200 without content when /echo is requested.")]
         [Trait("Category", "POST")]
         public void Send_POST_wihtout_string_data_should_return_200_without_content()
@@ -365,18 +387,30 @@ namespace OneHttpClient.UnitTests
         [Trait("Category", "GET")]
         public void Send_should_throw_on_timeout()
         {
-            var options = new HttpRequestOptions() { TimeoutInSeconds = 1 };
+            var serverTimeoutInSeconds = 30;
+            var clientTimeoutInSeconds = 3;
+            var toleranceInSeconds = 1;
+
+            // Setting per-request timeout
+            var options = new HttpRequestOptions() { TimeoutInSeconds = clientTimeoutInSeconds };
 
             var exception = Record.Exception(() =>
             {
-                return _httpService.SendAsync(HttpMethodEnum.GET, $"{_serverFixture.BaseAddress}/timeout", options: options).Result;
+                var url = $"{_serverFixture.BaseAddress}/timeout?delay={serverTimeoutInSeconds}";
+                return _httpService.SendAsync(HttpMethodEnum.GET, url, options: options).Result;
             });
 
             // Assert
-            True(options.TimeoutInSeconds < HttpServerFixture.SampleDelayInSeconds);
+            True(clientTimeoutInSeconds < serverTimeoutInSeconds);
             NotNull(exception);
             IsType<AggregateException>(exception);
             IsType<TimeoutException>((exception as AggregateException).InnerException);
+
+            // Assert TimeoutException data
+            var innerException = (exception as AggregateException).InnerException;
+            var elapsedSeconds = (double) innerException.Data["ElapsedMilliseconds"] / 1000;
+            True(elapsedSeconds < (clientTimeoutInSeconds + toleranceInSeconds));
+            True(elapsedSeconds > (clientTimeoutInSeconds - toleranceInSeconds));
         }
     }
 }
