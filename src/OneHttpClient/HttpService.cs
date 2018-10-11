@@ -172,18 +172,15 @@ namespace OneHttpClient
             {
                 foreach (string key in headers.Keys)
                 {
-                    // Try add to request message headers
                     var added = message.Headers.TryAddWithoutValidation(key, headers[key]);
-                    if (added == false)
+                    if (!added && message.Content != null)
                     {
-                        // Skip Content-Type when it's already set by this client
-                        if (message.Content.Headers.ContentType != null)
+                        // If could not add to request headers, then it may be a content header.
+                        // Skip when it's been already set by this client (via Content creation)
+                        if (message.Content.Headers.ContentType == null)
                         {
-                            continue;
+                            message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
                         }
-
-                        // Try add to content headers
-                        message.Content.Headers.TryAddWithoutValidation(key, headers[key]);
                     }
                 }
             }
@@ -229,17 +226,25 @@ namespace OneHttpClient
                 catch (TaskCanceledException)
                 {
                     stopwatch.Stop();
-                    
-                    // Replace the current exception with the basic message "A task was canceled" 
-                    // by a more appropriate and more explanatory one.
 
-                    var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
-                    timeoutException.Data.Add("GuideNumber", guideNumber);
-                    timeoutException.Data.Add("ElapsedMilliseconds", stopwatch.Elapsed.TotalMilliseconds);
+                    // The task could have been canceled by either a native HttpClient timeout or a 
+                    // timeout from cancellation token if set.
 
-                    throw timeoutException;
+                    // This exception will be replaced by the one created below because:
+                    //   - HttpClient timeout is not clear enough. It just says "A task was canceled".
+                    //   - The exception should be the same regardless of the source of timeout.
+                    throw CreateTimeoutException(guideNumber, stopwatch);
                 }
             }
+        }
+
+        private static TimeoutException CreateTimeoutException(string guideNumber, Stopwatch stopwatch)
+        {
+            var timeoutException = new TimeoutException($"Request {guideNumber} timed out after {stopwatch.Elapsed.TotalMilliseconds} ms.");
+            timeoutException.Data.Add("GuideNumber", guideNumber);
+            timeoutException.Data.Add("ElapsedMilliseconds", stopwatch.Elapsed.TotalMilliseconds);
+
+            return timeoutException;
         }
 
         /// <summary>
