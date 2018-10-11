@@ -46,19 +46,21 @@ namespace TestConsoleApp
         [HttpGet("/times")]
         public async Task<IActionResult> TestSequential(int count = 10)
         {
-            string url = "http://jsonplaceholder.typicode.com/posts/1";
+            //string url = "http://jsonplaceholder.typicode.com/posts/1";
+            string url = "https://api-staging-cadu.stone.com.br/membership/version";
 
             // Warmup
             var warmupResponse = await _http.GetAsync(url);
 
             // Max out the iteration count
             if (count > 50) { count = 50; }
+            var stopwatch = new Stopwatch();
 
             // Make calls
             var elapsedTimes = new Dictionary<double, double>();
             for (int i = 0; i < count; i++)
             {
-                var stopwatch = Stopwatch.StartNew();
+                stopwatch.Restart();
                 var response = await _http.GetAsync(url);
                 stopwatch.Stop();
 
