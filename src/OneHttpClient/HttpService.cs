@@ -287,7 +287,7 @@ namespace OneHttpClient
         /// </summary>
         /// <param name="delay">Amount of time to wait before cancelling a task.</param>
         /// <returns>The <see cref="CancellationTokenSource"/> when delay is greater than zero or null otherwise.</returns>
-        private CancellationTokenSource GetCancellationTokenSource(TimeSpan delay)
+        private static CancellationTokenSource GetCancellationTokenSource(TimeSpan delay)
         {
             if (delay <= TimeSpan.Zero)
             {
