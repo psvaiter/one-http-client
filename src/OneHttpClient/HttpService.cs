@@ -252,7 +252,7 @@ namespace OneHttpClient
 
         /// <summary>
         /// Creates a <see cref="TimeoutException"/> with a predefined message, a guide number and the 
-        /// elapsed time. The last two will be available as additional data.
+        /// elapsed time. The last two will also be available as additional data.
         /// </summary>
         /// <param name="guideNumber">The guide number to correlate to a request.</param>
         /// <param name="elapsedTime">The time elapsed from the start of the request until it fails.</param>
